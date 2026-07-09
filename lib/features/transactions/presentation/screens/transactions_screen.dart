@@ -59,7 +59,10 @@ class TransactionsScreen extends ConsumerWidget {
                   ref.read(transactionProvider.notifier).removeTransaction(id);
                   Navigator.of(dialogCtx).pop();
                   ScaffoldMessenger.of(ctx).showSnackBar(
-                    const SnackBar(content: Text('Transaction deleted and balance updated successfully.')),
+                    const SnackBar(
+                      content: Text('🗑 Transaction Deleted'),
+                      backgroundColor: Colors.red,
+                    ),
                   );
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red[800], foregroundColor: Colors.white),

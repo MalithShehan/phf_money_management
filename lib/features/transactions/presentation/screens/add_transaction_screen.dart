@@ -326,7 +326,10 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                                 context.go('/transactions');
 
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Transaction recorded successfully!')),
+                                  const SnackBar(
+                                    content: Text('✅ Transaction Saved Successfully'),
+                                    backgroundColor: Colors.green,
+                                  ),
                                 );
                               }
                             },
