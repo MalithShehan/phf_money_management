@@ -87,12 +87,17 @@ class DashboardScreen extends ConsumerWidget {
         foregroundColor: Colors.white,
       ),
       drawer: const AppDrawer(),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      body: (accountState.isLoading ||
+              transactionState.isLoading ||
+              categoryState.isLoading ||
+              budgetState.isLoading)
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
               // 1. Total Balance Card
               Container(
                 width: double.infinity,
