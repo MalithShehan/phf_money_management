@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:phf_money_management/core/widgets/app_drawer.dart';
 import 'package:phf_money_management/features/settings/presentation/providers/currency_provider.dart';
+import 'package:phf_money_management/features/transactions/domain/usecases/filter_transactions.dart';
 import 'package:phf_money_management/features/accounts/domain/entities/account.dart';
 import 'package:phf_money_management/features/accounts/presentation/providers/account_provider.dart';
 import 'package:phf_money_management/features/categories/domain/entities/category.dart';
@@ -105,34 +106,12 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       );
     }
 
-    // Filter transaction list based on chip type selection and text search query
-    final query = _searchController.text.toLowerCase().trim();
-    final filteredTransactions = transactionState.transactions.where((tx) {
-      // 1. Filter by Chip Selection (All / Income / Expense)
-      if (_selectedFilter != 'All' && tx.type.toLowerCase() != _selectedFilter.toLowerCase()) {
-        return false;
-      }
-
-      // 2. Filter by search text query
-      if (query.isEmpty) return true;
-
-      final matchesDescription = tx.description?.toLowerCase().contains(query) ?? false;
-      final matchesType = tx.type.toLowerCase().contains(query);
-
-      final categoryName = categoryState.categories.firstWhere(
-        (c) => c.id == tx.categoryId,
-        orElse: () => const Category(id: 0, name: 'General', type: 'Expense'),
-      ).name.toLowerCase();
-      final matchesCategory = categoryName.contains(query);
-
-      final accountName = accountState.accounts.firstWhere(
-        (a) => a.id == tx.accountId,
-        orElse: () => const Account(id: 0, name: 'Unknown Account', balance: 0, type: ''),
-      ).name.toLowerCase();
-      final matchesAccount = accountName.contains(query);
-
-      return matchesDescription || matchesType || matchesCategory || matchesAccount;
-    }).toList();
+    final filterTransactions = ref.watch(filterTransactionsProvider);
+    final filteredTransactions = filterTransactions(
+      transactions: transactionState.transactions,
+      query: _searchController.text.trim(),
+      typeFilter: _selectedFilter,
+    );
 
     return Scaffold(
       appBar: AppBar(

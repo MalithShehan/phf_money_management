@@ -7,6 +7,7 @@ import 'package:phf_money_management/features/categories/domain/entities/categor
 import 'package:phf_money_management/features/categories/presentation/providers/category_provider.dart';
 import 'package:phf_money_management/features/transactions/presentation/providers/transaction_provider.dart';
 import 'package:phf_money_management/features/settings/presentation/providers/currency_provider.dart';
+import 'package:phf_money_management/features/reports/domain/usecases/get_category_expense_breakdown.dart';
 
 class ReportsScreen extends ConsumerWidget {
   const ReportsScreen({super.key});
@@ -22,16 +23,12 @@ class ReportsScreen extends ConsumerWidget {
     final transactionState = ref.watch(transactionProvider);
     final categoryState = ref.watch(categoryProvider);
 
-    final expenses = transactionState.transactions
-        .where((t) => t.type.toLowerCase() == 'expense')
-        .toList();
+    final getCategoryBreakdown = ref.watch(getCategoryExpenseBreakdownProvider);
+    final categorySums = getCategoryBreakdown(transactionState.transactions);
 
     double totalExpenses = 0.0;
-    final Map<int, double> categorySums = {};
-
-    for (final exp in expenses) {
-      totalExpenses += exp.amount;
-      categorySums[exp.categoryId] = (categorySums[exp.categoryId] ?? 0.0) + exp.amount;
+    for (final amount in categorySums.values) {
+      totalExpenses += amount;
     }
 
     final currencySymbol = ref.watch(currencyProvider);
@@ -72,7 +69,7 @@ class ReportsScreen extends ConsumerWidget {
         foregroundColor: Colors.white,
       ),
       drawer: const AppDrawer(),
-      body: expenses.isEmpty
+      body: categorySums.isEmpty
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.all(32.0),

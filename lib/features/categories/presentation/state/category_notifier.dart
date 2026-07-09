@@ -5,6 +5,7 @@ import '../../domain/usecases/create_category.dart';
 import '../../domain/usecases/delete_category.dart';
 import '../../domain/usecases/update_category.dart';
 import '../../domain/usecases/watch_categories.dart';
+import '../../domain/usecases/seed_default_categories.dart';
 import 'category_state.dart';
 
 class CategoryNotifier extends Notifier<CategoryState> {
@@ -12,6 +13,7 @@ class CategoryNotifier extends Notifier<CategoryState> {
   late final DeleteCategory _deleteCategory;
   late final UpdateCategory _updateCategory;
   late final WatchCategories _watchCategories;
+  late final SeedDefaultCategories _seedDefaultCategoriesUsecase;
   StreamSubscription<List<Category>>? _subscription;
 
   @override
@@ -20,6 +22,7 @@ class CategoryNotifier extends Notifier<CategoryState> {
     _deleteCategory = ref.watch(deleteCategoryProvider);
     _updateCategory = ref.watch(updateCategoryProvider);
     _watchCategories = ref.watch(watchCategoriesProvider);
+    _seedDefaultCategoriesUsecase = ref.watch(seedDefaultCategoriesProvider);
 
     _startWatching();
 
@@ -57,18 +60,7 @@ class CategoryNotifier extends Notifier<CategoryState> {
 
   Future<void> _seedDefaultCategories() async {
     try {
-      final defaults = [
-        Category(id: 0, name: 'Salary', type: 'Income', icon: 'salary', color: '#2E7D32'),
-        Category(id: 0, name: 'Food', type: 'Expense', icon: 'restaurant', color: '#EF6C00'),
-        Category(id: 0, name: 'Transport', type: 'Expense', icon: 'car', color: '#1976D2'),
-        Category(id: 0, name: 'Shopping', type: 'Expense', icon: 'shopping', color: '#6A1B9A'),
-        Category(id: 0, name: 'Entertainment', type: 'Expense', icon: 'entertainment', color: '#C62828'),
-        Category(id: 0, name: 'Home/Rent', type: 'Expense', icon: 'home', color: '#00796B'),
-      ];
-
-      for (final cat in defaults) {
-        await _createCategory(cat);
-      }
+      await _seedDefaultCategoriesUsecase();
     } catch (e) {
       print('ERROR SEEDING CATEGORIES: $e');
     } finally {

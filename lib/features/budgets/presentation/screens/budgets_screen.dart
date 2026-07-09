@@ -8,6 +8,7 @@ import 'package:phf_money_management/features/settings/presentation/providers/cu
 import 'package:phf_money_management/features/transactions/presentation/providers/transaction_provider.dart';
 import '../../domain/entities/budget.dart';
 import '../providers/budget_provider.dart';
+import 'package:phf_money_management/features/budgets/domain/usecases/get_budget_progress.dart';
 
 class BudgetsScreen extends ConsumerStatefulWidget {
   const BudgetsScreen({super.key});
@@ -76,26 +77,12 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
 
     final currencyFormat = NumberFormat.currency(symbol: '$currencySymbol ', decimalDigits: 2);
 
-    // 1. Filter budgets for selected month
-    final monthlyBudgets = budgetState.budgets.where((b) {
-      return b.startDate.year == _selectedMonth.year && b.startDate.month == _selectedMonth.month;
-    }).toList();
-
-    // 2. Filter transactions for selected month
-    final startOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month, 1);
-    final endOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0, 23, 59, 59);
-
-    final monthlyExpenses = transactionState.transactions.where((tx) {
-      return tx.type.toLowerCase() == 'expense' &&
-          tx.date.isAfter(startOfMonth.subtract(const Duration(seconds: 1))) &&
-          tx.date.isBefore(endOfMonth.add(const Duration(seconds: 1)));
-    }).toList();
-
-    // 3. Compute total spent per category
-    final Map<int, double> categorySpent = {};
-    for (final tx in monthlyExpenses) {
-      categorySpent[tx.categoryId] = (categorySpent[tx.categoryId] ?? 0.0) + tx.amount;
-    }
+    final getBudgetProgress = ref.watch(getBudgetProgressProvider);
+    final progressList = getBudgetProgress(
+      budgets: budgetState.budgets,
+      transactions: transactionState.transactions,
+      targetMonth: _selectedMonth,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -136,7 +123,7 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
           Expanded(
             child: budgetState.isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : monthlyBudgets.isEmpty
+                : progressList.isEmpty
                     ? Center(
                         child: Padding(
                           padding: const EdgeInsets.all(32.0),
@@ -172,18 +159,19 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.all(12),
-                        itemCount: monthlyBudgets.length,
+                        itemCount: progressList.length,
                         itemBuilder: (context, index) {
-                          final budget = monthlyBudgets[index];
+                          final progressItem = progressList[index];
+                          final budget = progressItem.budget;
                           final category = categoryState.categories.firstWhere(
                             (c) => c.id == budget.categoryId,
                             orElse: () => const Category(id: 0, name: 'General', type: 'Expense'),
                           );
 
-                          final spent = categorySpent[budget.categoryId] ?? 0.0;
-                          final remaining = budget.amountLimit - spent;
-                          final progress = budget.amountLimit > 0 ? (spent / budget.amountLimit) : 0.0;
-                          final isOverBudget = spent > budget.amountLimit;
+                          final spent = progressItem.spentAmount;
+                          final remaining = progressItem.remainingAmount;
+                          final progress = progressItem.progress;
+                          final isOverBudget = progressItem.isOverBudget;
 
                           Color progressColor;
                           if (progress >= 1.0) {
