@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/dashboard/presentation/screens/splash_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
@@ -8,40 +9,60 @@ import '../../features/transactions/presentation/screens/add_transaction_screen.
 import '../../features/reports/presentation/screens/reports_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 
+CustomTransitionPage<void> _customTransition(Widget child, GoRouterState state) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0.08, 0.0), // subtle horizontal slide
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+          child: child,
+        ),
+      );
+    },
+    transitionDuration: const Duration(milliseconds: 300),
+  );
+}
+
 final router = GoRouter(
   initialLocation: '/',
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => const SplashScreen(),
+      pageBuilder: (context, state) => _customTransition(const SplashScreen(), state),
     ),
     GoRoute(
       path: '/dashboard',
-      builder: (context, state) => const DashboardScreen(),
+      pageBuilder: (context, state) => _customTransition(const DashboardScreen(), state),
     ),
     GoRoute(
       path: '/accounts',
-      builder: (context, state) => const AccountsScreen(),
+      pageBuilder: (context, state) => _customTransition(const AccountsScreen(), state),
     ),
     GoRoute(
       path: '/categories',
-      builder: (context, state) => const CategoriesScreen(),
+      pageBuilder: (context, state) => _customTransition(const CategoriesScreen(), state),
     ),
     GoRoute(
       path: '/transactions',
-      builder: (context, state) => const TransactionsScreen(),
+      pageBuilder: (context, state) => _customTransition(const TransactionsScreen(), state),
     ),
     GoRoute(
       path: '/add-transaction',
-      builder: (context, state) => const AddTransactionScreen(),
+      pageBuilder: (context, state) => _customTransition(const AddTransactionScreen(), state),
     ),
     GoRoute(
       path: '/reports',
-      builder: (context, state) => const ReportsScreen(),
+      pageBuilder: (context, state) => _customTransition(const ReportsScreen(), state),
     ),
     GoRoute(
       path: '/settings',
-      builder: (context, state) => const SettingsScreen(),
+      pageBuilder: (context, state) => _customTransition(const SettingsScreen(), state),
     ),
   ],
 );
