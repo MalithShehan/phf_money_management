@@ -52,6 +52,7 @@ class TransactionNotifier extends Notifier<TransactionState> {
     try {
       await _createTransaction(transaction);
     } catch (e) {
+      print('ERROR ADDING TRANSACTION: $e');
       state = state.copyWith(errorMessage: e.toString());
     }
   }
@@ -60,6 +61,7 @@ class TransactionNotifier extends Notifier<TransactionState> {
     try {
       await _updateTransaction(transaction);
     } catch (e) {
+      print('ERROR EDITING TRANSACTION: $e');
       state = state.copyWith(errorMessage: e.toString());
     }
   }
@@ -68,6 +70,7 @@ class TransactionNotifier extends Notifier<TransactionState> {
     try {
       await _deleteTransaction(id);
     } catch (e) {
+      print('ERROR REMOVING TRANSACTION: $e');
       state = state.copyWith(errorMessage: e.toString());
     }
   }

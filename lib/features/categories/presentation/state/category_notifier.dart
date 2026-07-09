@@ -46,6 +46,7 @@ class CategoryNotifier extends Notifier<CategoryState> {
     try {
       await _createCategory(category);
     } catch (e) {
+      print('ERROR ADDING CATEGORY: $e');
       state = state.copyWith(errorMessage: e.toString());
     }
   }

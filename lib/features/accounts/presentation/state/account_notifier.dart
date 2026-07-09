@@ -49,6 +49,7 @@ class AccountNotifier extends Notifier<AccountState> {
     try {
       await _createAccount(account);
     } catch (e) {
+      print('ERROR ADDING ACCOUNT: $e');
       state = state.copyWith(errorMessage: e.toString());
     }
   }
@@ -57,6 +58,7 @@ class AccountNotifier extends Notifier<AccountState> {
     try {
       await _updateAccount(account);
     } catch (e) {
+      print('ERROR UPDATING ACCOUNT: $e');
       state = state.copyWith(errorMessage: e.toString());
     }
   }
