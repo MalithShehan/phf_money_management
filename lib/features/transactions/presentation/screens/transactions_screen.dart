@@ -18,6 +18,7 @@ class TransactionsScreen extends ConsumerStatefulWidget {
 
 class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   final _searchController = TextEditingController();
+  String _selectedFilter = 'All';
 
   @override
   void dispose() {
@@ -102,9 +103,17 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       );
     }
 
-    // Filter transaction list based on search query
+    // Filter transaction list based on chip type selection and text search query
     final query = _searchController.text.toLowerCase().trim();
     final filteredTransactions = transactionState.transactions.where((tx) {
+      // 1. Filter by Chip Selection (All / Income / Expense)
+      if (_selectedFilter != 'All' && tx.type.toLowerCase() != _selectedFilter.toLowerCase()) {
+        return false;
+      }
+
+      // 2. Filter by search text query
+      if (query.isEmpty) return true;
+
       final matchesDescription = tx.description?.toLowerCase().contains(query) ?? false;
       final matchesType = tx.type.toLowerCase().contains(query);
 
@@ -218,6 +227,60 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                         ),
                       ),
                     ),
+                    
+                    // Filter Chips Row
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                      child: Row(
+                        children: [
+                          ChoiceChip(
+                            label: const Text('All'),
+                            selected: _selectedFilter == 'All',
+                            onSelected: (selected) {
+                              if (selected) {
+                                setState(() {
+                                  _selectedFilter = 'All';
+                                });
+                              }
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                          ChoiceChip(
+                            label: const Text('Income'),
+                            selected: _selectedFilter == 'Income',
+                            selectedColor: Colors.green[100],
+                            labelStyle: TextStyle(
+                              color: _selectedFilter == 'Income' ? Colors.green[800] : Colors.black87,
+                            ),
+                            onSelected: (selected) {
+                              if (selected) {
+                                setState(() {
+                                  _selectedFilter = 'Income';
+                                });
+                              }
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                          ChoiceChip(
+                            label: const Text('Expense'),
+                            selected: _selectedFilter == 'Expense',
+                            selectedColor: Colors.red[100],
+                            labelStyle: TextStyle(
+                              color: _selectedFilter == 'Expense' ? Colors.red[800] : Colors.black87,
+                            ),
+                            onSelected: (selected) {
+                              if (selected) {
+                                setState(() {
+                                  _selectedFilter = 'Expense';
+                                });
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
                     Expanded(
                       child: filteredTransactions.isEmpty
                           ? Center(
