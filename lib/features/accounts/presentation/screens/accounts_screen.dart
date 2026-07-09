@@ -14,113 +14,6 @@ class AccountsScreen extends ConsumerStatefulWidget {
 
 class _AccountsScreenState extends ConsumerState<AccountsScreen> {
 
-  void _showAddAccountDialog(BuildContext context) {
-    final formKey = GlobalKey<FormState>();
-    final nameController = TextEditingController();
-    final balanceController = TextEditingController();
-    String localSelectedType = 'Cash';
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (stContext, setDialogState) {
-            return AlertDialog(
-              title: const Text('Add New Account'),
-              content: Form(
-                key: formKey,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextFormField(
-                        controller: nameController,
-                        decoration: const InputDecoration(labelText: 'Account Name'),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Please enter a name';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: balanceController,
-                        decoration: const InputDecoration(labelText: 'Initial Balance (Rs.)'),
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Please enter a balance';
-                          }
-                          if (double.tryParse(value) == null) {
-                            return 'Please enter a valid number';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        initialValue: localSelectedType,
-                        decoration: const InputDecoration(labelText: 'Account Type'),
-                        items: const [
-                          DropdownMenuItem(value: 'Cash', child: Text('Cash')),
-                          DropdownMenuItem(value: 'Bank', child: Text('Bank')),
-                          DropdownMenuItem(value: 'Card', child: Text('Credit Card')),
-                        ],
-                        onChanged: (value) {
-                          if (value != null) {
-                            setDialogState(() {
-                              localSelectedType = value;
-                            });
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop();
-                  },
-                  child: const Text('Cancel'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (formKey.currentState!.validate()) {
-                      final newAccount = Account(
-                        id: 0, // database will auto-increment
-                        name: nameController.text.trim(),
-                        balance: double.parse(balanceController.text.trim()),
-                        type: localSelectedType,
-                      );
-
-                      ref.read(accountProvider.notifier).addAccount(newAccount);
-
-                      Navigator.of(dialogContext).pop();
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Account "${newAccount.name}" created successfully!')),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1976D2),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('Save'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    ).then((_) {
-      nameController.dispose();
-      balanceController.dispose();
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -239,10 +132,136 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
                   },
                 ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddAccountDialog(context),
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) => const AddAccountDialog(),
+          );
+        },
         backgroundColor: const Color(0xFF1976D2),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 }
+
+class AddAccountDialog extends ConsumerStatefulWidget {
+  const AddAccountDialog({super.key});
+
+  @override
+  ConsumerState<AddAccountDialog> createState() => _AddAccountDialogState();
+}
+
+class _AddAccountDialogState extends ConsumerState<AddAccountDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _nameController;
+  late final TextEditingController _balanceController;
+  String _selectedType = 'Cash';
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController();
+    _balanceController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _balanceController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Add New Account'),
+      content: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: 'Account Name'),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter a name';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _balanceController,
+                decoration: const InputDecoration(labelText: 'Initial Balance (Rs.)'),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter a balance';
+                  }
+                  if (double.tryParse(value) == null) {
+                    return 'Please enter a valid number';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: _selectedType,
+                decoration: const InputDecoration(labelText: 'Account Type'),
+                items: const [
+                  DropdownMenuItem(value: 'Cash', child: Text('Cash')),
+                  DropdownMenuItem(value: 'Bank', child: Text('Bank')),
+                  DropdownMenuItem(value: 'Card', child: Text('Credit Card')),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      _selectedType = value;
+                    });
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              final newAccount = Account(
+                id: 0, // database will auto-increment
+                name: _nameController.text.trim(),
+                balance: double.parse(_balanceController.text.trim()),
+                type: _selectedType,
+              );
+
+              ref.read(accountProvider.notifier).addAccount(newAccount);
+
+              Navigator.of(context).pop();
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Account "${newAccount.name}" created successfully!')),
+              );
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF1976D2),
+            foregroundColor: Colors.white,
+          ),
+          child: const Text('Save'),
+        ),
+      ],
+    );
+  }
+}
+
