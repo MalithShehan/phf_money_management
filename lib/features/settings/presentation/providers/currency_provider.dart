@@ -16,6 +16,7 @@ class CurrencyNotifier extends Notifier<String> {
     final saved = _prefs.getString(_key);
     if (saved != null) {
       state = saved;
+      
     }
   }
 

@@ -10,6 +10,8 @@ import 'package:phf_money_management/features/accounts/presentation/providers/ac
 import 'package:phf_money_management/features/categories/domain/entities/category.dart';
 import 'package:phf_money_management/features/categories/presentation/providers/category_provider.dart';
 import 'package:phf_money_management/features/transactions/presentation/providers/transaction_provider.dart';
+import 'package:phf_money_management/core/utils/responsive.dart';
+
 
 class TransactionsPage extends ConsumerStatefulWidget {
   const TransactionsPage({super.key});
@@ -119,7 +121,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
         backgroundColor: const Color(0xFF1976D2),
         foregroundColor: Colors.white,
       ),
-      drawer: const AppDrawer(),
+      drawer: Responsive.isMobile(context) ? const AppDrawer() : null,
       body: transactionState.isLoading
           ? const Center(child: CircularProgressIndicator())
           : transactionState.transactions.isEmpty
@@ -176,227 +178,308 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                     ),
                   ),
                 )
-              : Column(
-                  children: [
-                    // Search Bar
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: TextField(
-                          controller: _searchController,
-                          decoration: InputDecoration(
-                            hintText: 'Search description, type, category or account...',
-                            prefixIcon: const Icon(Icons.search_rounded),
-                            suffixIcon: _searchController.text.isNotEmpty
-                                ? IconButton(
-                                    icon: const Icon(Icons.clear_rounded),
-                                    onPressed: () {
-                                      setState(() {
-                                        _searchController.clear();
-                                      });
-                                    },
-                                  )
-                                : null,
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          ),
-                          onChanged: (_) => setState(() {}),
-                        ),
-                      ),
-                    ),
-                    
-                    // Filter Chips Row
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-                      child: Row(
-                        children: [
-                          ChoiceChip(
-                            label: const Text('All'),
-                            selected: _selectedFilter == 'All',
-                            onSelected: (selected) {
-                              if (selected) {
-                                setState(() {
-                                  _selectedFilter = 'All';
-                                });
-                              }
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          ChoiceChip(
-                            label: const Text('Income'),
-                            selected: _selectedFilter == 'Income',
-                            selectedColor: Colors.green[100],
-                            labelStyle: TextStyle(
-                              color: _selectedFilter == 'Income' ? Colors.green[800] : Colors.black87,
-                            ),
-                            onSelected: (selected) {
-                              if (selected) {
-                                setState(() {
-                                  _selectedFilter = 'Income';
-                                });
-                              }
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          ChoiceChip(
-                            label: const Text('Expense'),
-                            selected: _selectedFilter == 'Expense',
-                            selectedColor: Colors.red[100],
-                            labelStyle: TextStyle(
-                              color: _selectedFilter == 'Expense' ? Colors.red[800] : Colors.black87,
-                            ),
-                            onSelected: (selected) {
-                              if (selected) {
-                                setState(() {
-                                  _selectedFilter = 'Expense';
-                                });
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
+              : Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 900),
+                    child: Column(
+                      children: [
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isWide = constraints.maxWidth >= 600;
 
-                    Expanded(
-                      child: filteredTransactions.isEmpty
-                          ? Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(32.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                            final searchBar = Card(
+                              elevation: 2,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: TextField(
+                                controller: _searchController,
+                                decoration: InputDecoration(
+                                  hintText: 'Search description, type, category or account...',
+                                  prefixIcon: const Icon(Icons.search_rounded),
+                                  suffixIcon: _searchController.text.isNotEmpty
+                                      ? IconButton(
+                                          icon: const Icon(Icons.clear_rounded),
+                                          onPressed: () {
+                                            setState(() {
+                                              _searchController.clear();
+                                            });
+                                          },
+                                        )
+                                      : null,
+                                  border: InputBorder.none,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                ),
+                                onChanged: (_) => setState(() {}),
+                              ),
+                            );
+
+                            final filterChips = Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ChoiceChip(
+                                  label: const Text('All'),
+                                  selected: _selectedFilter == 'All',
+                                  onSelected: (selected) {
+                                    if (selected) {
+                                      setState(() {
+                                        _selectedFilter = 'All';
+                                      });
+                                    }
+                                  },
+                                ),
+                                const SizedBox(width: 8),
+                                ChoiceChip(
+                                  label: const Text('Income'),
+                                  selected: _selectedFilter == 'Income',
+                                  selectedColor: Colors.green[100],
+                                  labelStyle: TextStyle(
+                                    color: _selectedFilter == 'Income' ? Colors.green[800] : Colors.black87,
+                                  ),
+                                  onSelected: (selected) {
+                                    if (selected) {
+                                      setState(() {
+                                        _selectedFilter = 'Income';
+                                      });
+                                    }
+                                  },
+                                ),
+                                const SizedBox(width: 8),
+                                ChoiceChip(
+                                  label: const Text('Expense'),
+                                  selected: _selectedFilter == 'Expense',
+                                  selectedColor: Colors.red[100],
+                                  labelStyle: TextStyle(
+                                    color: _selectedFilter == 'Expense' ? Colors.red[800] : Colors.black87,
+                                  ),
+                                  onSelected: (selected) {
+                                    if (selected) {
+                                      setState(() {
+                                        _selectedFilter = 'Expense';
+                                      });
+                                    }
+                                  },
+                                ),
+                              ],
+                            );
+
+                            if (isWide) {
+                              return Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: Row(
                                   children: [
-                                    const Text(
-                                      '🔍',
-                                      style: TextStyle(fontSize: 64),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    const Text(
-                                      'No Results Found',
-                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black54),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'No transactions matched the query "${_searchController.text}".',
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(color: Colors.black38),
-                                    ),
+                                    Expanded(child: searchBar),
+                                    const SizedBox(width: 16),
+                                    filterChips,
                                   ],
                                 ),
-                              ),
-                            )
-                          : ListView.builder(
-                              padding: const EdgeInsets.all(12),
-                              itemCount: filteredTransactions.length,
-                              itemBuilder: (context, index) {
-                                final tx = filteredTransactions[index];
-                                final isIncome = tx.type.toLowerCase() == 'income';
-
-                                // Resolve account name
-                                final account = accountState.accounts.firstWhere(
-                                  (a) => a.id == tx.accountId,
-                                  orElse: () => const Account(id: 0, name: 'Unknown Account', balance: 0, type: ''),
-                                );
-
-                                // Resolve category details
-                                final category = categoryState.categories.firstWhere(
-                                  (c) => c.id == tx.categoryId,
-                                  orElse: () => const Category(id: 0, name: 'General', type: 'Expense'),
-                                );
-
-                                // Set category colors
-                                Color catColor = const Color(0xFF1976D2);
-                                if (category.color != null) {
-                                  final hex = category.color!.replaceAll('#', '');
-                                  catColor = Color(int.parse('FF$hex', radix: 16));
-                                }
-
-                                final formattedDate = DateFormat('yyyy-MM-dd HH:mm').format(tx.date);
-
-                                return Card(
-                                  elevation: 1,
-                                  margin: const EdgeInsets.symmetric(vertical: 6),
-                                  child: ListTile(
-                                    leading: CircleAvatar(
-                                      backgroundColor: isIncome ? Colors.green[50] : Colors.red[50],
-                                      child: Icon(
-                                        isIncome ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
-                                        color: isIncome ? Colors.green[800] : Colors.red[800],
+                              );
+                            } else {
+                              return Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(12.0),
+                                    child: searchBar,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                                    child: Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: filterChips,
                                       ),
                                     ),
-                                    title: Text(
-                                      tx.description != null && tx.description!.isNotEmpty
-                                          ? tx.description!
-                                          : (isIncome ? 'Income Source' : 'Expense Details'),
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                    subtitle: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                  ),
+                                ],
+                              );
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 8),
+
+                        Expanded(
+                          child: filteredTransactions.isEmpty
+                              ? Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(32.0),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        const SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: catColor.withValues(alpha: 0.1),
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: Text(
-                                                category.name,
-                                                style: TextStyle(color: catColor, fontSize: 10, fontWeight: FontWeight.bold),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              account.name,
-                                              style: const TextStyle(fontSize: 11, color: Colors.black54),
-                                            ),
-                                          ],
+                                        const Text(
+                                          '🔍',
+                                          style: TextStyle(fontSize: 64),
                                         ),
-                                        const SizedBox(height: 4),
+                                        const SizedBox(height: 16),
+                                        const Text(
+                                          'No Results Found',
+                                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black54),
+                                        ),
+                                        const SizedBox(height: 8),
                                         Text(
-                                          formattedDate,
-                                          style: const TextStyle(fontSize: 10, color: Colors.black38),
-                                        ),
-                                      ],
-                                    ),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          '${isIncome ? '+' : '-'}${currencyFormat.format(tx.amount)}',
-                                          style: TextStyle(
-                                            color: isIncome ? Colors.green[800] : Colors.red[800],
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        IconButton(
-                                          icon: Icon(Icons.edit_outlined, color: Colors.grey[500], size: 20),
-                                          onPressed: () => context.go('/edit-transaction/${tx.id}'),
-                                        ),
-                                        IconButton(
-                                          icon: Icon(Icons.delete_outline_rounded, color: Colors.grey[500], size: 20),
-                                          onPressed: () => showDeleteConfirmation(
-                                            context,
-                                            tx.id,
-                                            tx.description ?? (isIncome ? 'Income' : 'Expense'),
-                                          ),
+                                          'No transactions matched the query "${_searchController.text}".',
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(color: Colors.black38),
                                         ),
                                       ],
                                     ),
                                   ),
-                                );
-                              },
-                            ),
+                                )
+                              : ListView.builder(
+                                  padding: const EdgeInsets.all(12),
+                                  itemCount: filteredTransactions.length,
+                                  itemBuilder: (context, index) {
+                                    final tx = filteredTransactions[index];
+                                    final isIncome = tx.type.toLowerCase() == 'income';
+
+                                    // Resolve account name
+                                    final account = accountState.accounts.firstWhere(
+                                      (a) => a.id == tx.accountId,
+                                      orElse: () => const Account(id: 0, name: 'Unknown Account', balance: 0, type: ''),
+                                    );
+
+                                    // Resolve category details
+                                    final category = categoryState.categories.firstWhere(
+                                      (c) => c.id == tx.categoryId,
+                                      orElse: () => const Category(id: 0, name: 'General', type: 'Expense'),
+                                    );
+
+                                    // Set category colors
+                                    Color catColor = const Color(0xFF1976D2);
+                                    if (category.color != null) {
+                                      final hex = category.color!.replaceAll('#', '');
+                                      catColor = Color(int.parse('FF$hex', radix: 16));
+                                    }
+
+                                    final formattedDate = DateFormat('yyyy-MM-dd HH:mm').format(tx.date);
+
+                                    return Card(
+                                      elevation: 1,
+                                      margin: const EdgeInsets.symmetric(vertical: 6),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(12.0),
+                                        child: Row(
+                                          children: [
+                                            CircleAvatar(
+                                              backgroundColor: isIncome ? Colors.green[50] : Colors.red[50],
+                                              radius: 20,
+                                              child: Icon(
+                                                isIncome ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                                                color: isIncome ? Colors.green[800] : Colors.red[800],
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    tx.description != null && tx.description!.isNotEmpty
+                                                        ? tx.description!
+                                                        : (isIncome ? 'Income Source' : 'Expense Details'),
+                                                    style: const TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 6),
+                                                  Wrap(
+                                                    spacing: 8,
+                                                    runSpacing: 4,
+                                                    crossAxisAlignment: WrapCrossAlignment.center,
+                                                    children: [
+                                                      Container(
+                                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                        decoration: BoxDecoration(
+                                                          color: catColor.withValues(alpha: 0.1),
+                                                          borderRadius: BorderRadius.circular(4),
+                                                        ),
+                                                        child: Text(
+                                                          category.name,
+                                                          style: TextStyle(
+                                                            color: catColor,
+                                                            fontSize: 10,
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        account.name,
+                                                        style: const TextStyle(fontSize: 11, color: Colors.black54),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    formattedDate,
+                                                    style: const TextStyle(fontSize: 10, color: Colors.black38),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  '${isIncome ? '+' : '-'}${currencyFormat.format(tx.amount)}',
+                                                  style: TextStyle(
+                                                    color: isIncome ? Colors.green[800] : Colors.red[800],
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 2),
+                                                PopupMenuButton<String>(
+                                                  icon: Icon(Icons.more_vert_rounded, color: Colors.grey[600], size: 20),
+                                                  padding: EdgeInsets.zero,
+                                                  constraints: const BoxConstraints(),
+                                                  onSelected: (value) {
+                                                    if (value == 'edit') {
+                                                      context.go('/edit-transaction/${tx.id}');
+                                                    } else if (value == 'delete') {
+                                                      showDeleteConfirmation(
+                                                        context,
+                                                        tx.id,
+                                                        tx.description ?? (isIncome ? 'Income' : 'Expense'),
+                                                      );
+                                                    }
+                                                  },
+                                                  itemBuilder: (context) => [
+                                                    const PopupMenuItem(
+                                                      value: 'edit',
+                                                      child: Row(
+                                                        children: [
+                                                          Icon(Icons.edit_outlined, size: 18),
+                                                          SizedBox(width: 8),
+                                                          Text('Edit'),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    const PopupMenuItem(
+                                                      value: 'delete',
+                                                      child: Row(
+                                                        children: [
+                                                          Icon(Icons.delete_outline_rounded, color: Colors.red, size: 18),
+                                                          SizedBox(width: 8),
+                                                          Text('Delete', style: TextStyle(color: Colors.red)),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.go('/add-transaction'),

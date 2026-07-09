@@ -9,6 +9,8 @@ import 'package:phf_money_management/features/transactions/presentation/provider
 import '../../domain/entities/budget.dart';
 import '../providers/budget_provider.dart';
 import 'package:phf_money_management/features/budgets/domain/usecases/get_budget_progress.dart';
+import 'package:phf_money_management/core/utils/responsive.dart';
+
 
 class BudgetsPage extends ConsumerStatefulWidget {
   const BudgetsPage({super.key});
@@ -90,7 +92,7 @@ class _BudgetsPageState extends ConsumerState<BudgetsPage> {
         backgroundColor: const Color(0xFF1976D2),
         foregroundColor: Colors.white,
       ),
-      drawer: const AppDrawer(),
+      drawer: Responsive.isMobile(context) ? const AppDrawer() : null,
       body: Column(
         children: [
           // Month Selector Banner
@@ -119,7 +121,7 @@ class _BudgetsPageState extends ConsumerState<BudgetsPage> {
             ),
           ),
 
-          // Budgets List View
+          // Budgets List / Grid View
           Expanded(
             child: budgetState.isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -157,140 +159,163 @@ class _BudgetsPageState extends ConsumerState<BudgetsPage> {
                           ),
                         ),
                       )
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(12),
-                        itemCount: progressList.length,
-                        itemBuilder: (context, index) {
-                          final progressItem = progressList[index];
-                          final budget = progressItem.budget;
-                          final category = categoryState.categories.firstWhere(
-                            (c) => c.id == budget.categoryId,
-                            orElse: () => const Category(id: 0, name: 'General', type: 'Expense'),
-                          );
+                    : LayoutBuilder(
+                        builder: (context, constraints) {
+                          final useGrid = constraints.maxWidth >= 600;
 
-                          final spent = progressItem.spentAmount;
-                          final remaining = progressItem.remainingAmount;
-                          final progress = progressItem.progress;
-                          final isOverBudget = progressItem.isOverBudget;
+                          Widget buildItem(BuildContext context, int index, bool isGrid) {
+                            final progressItem = progressList[index];
+                            final budget = progressItem.budget;
+                            final category = categoryState.categories.firstWhere(
+                              (c) => c.id == budget.categoryId,
+                              orElse: () => const Category(id: 0, name: 'General', type: 'Expense'),
+                            );
 
-                          Color progressColor;
-                          if (progress >= 1.0) {
-                            progressColor = Colors.red[800]!;
-                          } else if (progress >= 0.85) {
-                            progressColor = Colors.orange[800]!;
-                          } else {
-                            progressColor = _hexToColor(category.color);
+                            final spent = progressItem.spentAmount;
+                            final remaining = progressItem.remainingAmount;
+                            final progress = progressItem.progress;
+                            final isOverBudget = progressItem.isOverBudget;
+
+                            Color progressColor;
+                            if (progress >= 1.0) {
+                              progressColor = Colors.red[800]!;
+                            } else if (progress >= 0.85) {
+                              progressColor = Colors.orange[800]!;
+                            } else {
+                              progressColor = _hexToColor(category.color);
+                            }
+
+                            return Card(
+                              elevation: 2,
+                              margin: isGrid ? EdgeInsets.zero : const EdgeInsets.symmetric(vertical: 8),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            CircleAvatar(
+                                              backgroundColor: progressColor.withValues(alpha: 0.1),
+                                              child: Icon(Icons.circle, color: progressColor, size: 14),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Text(
+                                              category.name,
+                                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                            ),
+                                          ],
+                                        ),
+                                        PopupMenuButton<String>(
+                                          icon: const Icon(Icons.more_vert_rounded),
+                                          onSelected: (value) {
+                                            if (value == 'edit') {
+                                              showDialog(
+                                                context: context,
+                                                builder: (context) => AddBudgetDialog(
+                                                  budget: budget,
+                                                  initialMonth: _selectedMonth,
+                                                ),
+                                              );
+                                            } else if (value == 'delete') {
+                                              _showDeleteConfirmation(context, budget, category.name);
+                                            }
+                                          },
+                                          itemBuilder: (context) => [
+                                            const PopupMenuItem(
+                                              value: 'edit',
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.edit_rounded, size: 18),
+                                                  SizedBox(width: 8),
+                                                  Text('Edit'),
+                                                ],
+                                              ),
+                                            ),
+                                            const PopupMenuItem(
+                                              value: 'delete',
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.delete_rounded, color: Colors.red, size: 18),
+                                                  SizedBox(width: 8),
+                                                  Text('Delete', style: TextStyle(color: Colors.red)),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('Spent: ${currencyFormat.format(spent)}', style: const TextStyle(fontSize: 13, color: Colors.black54)),
+                                        Text('Limit: ${currencyFormat.format(budget.amountLimit)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: LinearProgressIndicator(
+                                        value: progress.clamp(0.0, 1.0),
+                                        backgroundColor: Colors.grey[200],
+                                        valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+                                        minHeight: 8,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          isOverBudget ? 'Over Budget' : 'Remaining',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: isOverBudget ? Colors.red[800] : Colors.green[800],
+                                          ),
+                                        ),
+                                        Text(
+                                          currencyFormat.format(remaining.abs()),
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: isOverBudget ? Colors.red[800] : Colors.green[800],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
                           }
 
-                          return Card(
-                            elevation: 2,
-                            margin: const EdgeInsets.symmetric(vertical: 8),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          CircleAvatar(
-                                            backgroundColor: progressColor.withValues(alpha: 0.1),
-                                            child: Icon(Icons.circle, color: progressColor, size: 14),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Text(
-                                            category.name,
-                                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                      PopupMenuButton<String>(
-                                        icon: const Icon(Icons.more_vert_rounded),
-                                        onSelected: (value) {
-                                          if (value == 'edit') {
-                                            showDialog(
-                                              context: context,
-                                              builder: (context) => AddBudgetDialog(
-                                                budget: budget,
-                                                initialMonth: _selectedMonth,
-                                              ),
-                                            );
-                                          } else if (value == 'delete') {
-                                            _showDeleteConfirmation(context, budget, category.name);
-                                          }
-                                        },
-                                        itemBuilder: (context) => [
-                                          const PopupMenuItem(
-                                            value: 'edit',
-                                            child: Row(
-                                              children: [
-                                                Icon(Icons.edit_rounded, size: 18),
-                                                SizedBox(width: 8),
-                                                Text('Edit'),
-                                              ],
-                                            ),
-                                          ),
-                                          const PopupMenuItem(
-                                            value: 'delete',
-                                            child: Row(
-                                              children: [
-                                                Icon(Icons.delete_rounded, color: Colors.red, size: 18),
-                                                SizedBox(width: 8),
-                                                Text('Delete', style: TextStyle(color: Colors.red)),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text('Spent: ${currencyFormat.format(spent)}', style: const TextStyle(fontSize: 13, color: Colors.black54)),
-                                      Text('Limit: ${currencyFormat.format(budget.amountLimit)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(4),
-                                    child: LinearProgressIndicator(
-                                      value: progress.clamp(0.0, 1.0),
-                                      backgroundColor: Colors.grey[200],
-                                      valueColor: AlwaysStoppedAnimation<Color>(progressColor),
-                                      minHeight: 8,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        isOverBudget ? 'Over Budget' : 'Remaining',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                          color: isOverBudget ? Colors.red[800] : Colors.green[800],
-                                        ),
-                                      ),
-                                      Text(
-                                        currencyFormat.format(remaining.abs()),
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: isOverBudget ? Colors.red[800] : Colors.green[800],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                          if (useGrid) {
+                            return GridView.builder(
+                              padding: const EdgeInsets.all(16),
+                              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                                maxCrossAxisExtent: constraints.maxWidth > 1200 ? 450 : 380,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                                childAspectRatio: constraints.maxWidth > 1200 ? 2.4 : 2.1,
                               ),
-                            ),
-                          );
+                              itemCount: progressList.length,
+                              itemBuilder: (context, index) => buildItem(context, index, true),
+                            );
+                          } else {
+                            return ListView.builder(
+                              padding: const EdgeInsets.all(12),
+                              itemCount: progressList.length,
+                              itemBuilder: (context, index) => buildItem(context, index, false),
+                            );
+                          }
                         },
                       ),
           ),
@@ -355,11 +380,16 @@ class _AddBudgetDialogState extends ConsumerState<AddBudgetDialog> {
               // Category Dropdown
               DropdownButtonFormField<int>(
                 value: _selectedCategoryId,
+                isExpanded: true,
                 decoration: const InputDecoration(labelText: 'Expense Category'),
                 items: expenseCategories.map((cat) {
                   return DropdownMenuItem<int>(
                     value: cat.id,
-                    child: Text(cat.name),
+                    child: Text(
+                      cat.name,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                   );
                 }).toList(),
                 validator: (value) {

@@ -5,6 +5,8 @@ import 'package:phf_money_management/core/widgets/app_drawer.dart';
 import 'package:phf_money_management/features/accounts/domain/entities/account.dart';
 import 'package:phf_money_management/features/accounts/presentation/providers/account_provider.dart';
 import 'package:phf_money_management/features/settings/presentation/providers/currency_provider.dart';
+import 'package:phf_money_management/core/utils/responsive.dart';
+
 
 class AccountsPage extends ConsumerStatefulWidget {
   const AccountsPage({super.key});
@@ -63,7 +65,7 @@ class _AccountsPageState extends ConsumerState<AccountsPage> {
         backgroundColor: const Color(0xFF1976D2),
         foregroundColor: Colors.white,
       ),
-      drawer: const AppDrawer(),
+      drawer: Responsive.isMobile(context) ? const AppDrawer() : null,
       body: accountState.isLoading
           ? const Center(child: CircularProgressIndicator())
           : accountState.accounts.isEmpty
@@ -100,112 +102,138 @@ class _AccountsPageState extends ConsumerState<AccountsPage> {
                     ),
                   ),
                 )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: accountState.accounts.length,
-                  itemBuilder: (context, index) {
-                    final acc = accountState.accounts[index];
-                    IconData typeIcon;
-                    Color typeColor;
+              : LayoutBuilder(
+                  builder: (context, constraints) {
+                    final useGrid = constraints.maxWidth >= 600;
 
-                    switch (acc.type.toLowerCase()) {
-                      case 'bank':
-                        typeIcon = Icons.account_balance;
-                        typeColor = Colors.blue[800]!;
-                        break;
-                      case 'card':
-                        typeIcon = Icons.account_balance_wallet;
-                        typeColor = Colors.purple[800]!;
-                        break;
-                      default:
-                        typeIcon = Icons.payments;
-                        typeColor = Colors.green[800]!;
-                    }
+                    Widget buildItem(BuildContext context, int index, bool isGrid) {
+                      final acc = accountState.accounts[index];
+                      IconData typeIcon;
+                      Color typeColor;
 
-                    return Card(
-                      elevation: 2,
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      child: ListTile(
-                        leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: typeColor.withValues(alpha: 0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(typeIcon, color: typeColor),
-                        ),
-                        title: Text(
-                          acc.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 4.0),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  acc.type,
-                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-                                ),
+                      switch (acc.type.toLowerCase()) {
+                        case 'bank':
+                          typeIcon = Icons.account_balance;
+                          typeColor = Colors.blue[800]!;
+                          break;
+                        case 'card':
+                          typeIcon = Icons.account_balance_wallet;
+                          typeColor = Colors.purple[800]!;
+                          break;
+                        default:
+                          typeIcon = Icons.payments;
+                          typeColor = Colors.green[800]!;
+                      }
+
+                      return Card(
+                        elevation: 2,
+                        margin: isGrid ? EdgeInsets.zero : const EdgeInsets.symmetric(vertical: 8),
+                        child: Center(
+                          child: ListTile(
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: typeColor.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
                               ),
-                            ],
-                          ),
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              currencyFormat.format(acc.balance),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: acc.balance >= 0 ? Colors.green[800] : Colors.red[800],
+                              child: Icon(typeIcon, color: typeColor),
+                            ),
+                            title: Text(
+                              acc.name,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 4.0),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[200],
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      acc.type,
+                                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            PopupMenuButton<String>(
-                              icon: const Icon(Icons.more_vert_rounded),
-                              onSelected: (value) {
-                                if (value == 'edit') {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AddAccountDialog(account: acc),
-                                  );
-                                } else if (value == 'delete') {
-                                  _showDeleteConfirmationDialog(context, acc);
-                                }
-                              },
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(
-                                  value: 'edit',
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.edit_rounded, size: 18),
-                                      SizedBox(width: 8),
-                                      Text('Edit'),
-                                    ],
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  currencyFormat.format(acc.balance),
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: acc.balance >= 0 ? Colors.green[800] : Colors.red[800],
                                   ),
                                 ),
-                                const PopupMenuItem(
-                                  value: 'delete',
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.delete_rounded, color: Colors.red, size: 18),
-                                      SizedBox(width: 8),
-                                      Text('Delete', style: TextStyle(color: Colors.red)),
-                                    ],
-                                  ),
+                                PopupMenuButton<String>(
+                                  icon: const Icon(Icons.more_vert_rounded),
+                                  onSelected: (value) {
+                                    if (value == 'edit') {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AddAccountDialog(account: acc),
+                                      );
+                                    } else if (value == 'delete') {
+                                      _showDeleteConfirmationDialog(context, acc);
+                                    }
+                                  },
+                                  itemBuilder: (context) => [
+                                    const PopupMenuItem(
+                                      value: 'edit',
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.edit_rounded, size: 18),
+                                          SizedBox(width: 8),
+                                          Text('Edit'),
+                                        ],
+                                      ),
+                                    ),
+                                    const PopupMenuItem(
+                                      value: 'delete',
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.delete_rounded, color: Colors.red, size: 18),
+                                          SizedBox(width: 8),
+                                          Text('Delete', style: TextStyle(color: Colors.red)),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ],
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }
+
+                    if (useGrid) {
+                      return GridView.builder(
+                        padding: const EdgeInsets.all(16),
+                        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: constraints.maxWidth > 1200 ? 450 : 380,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: constraints.maxWidth > 1200 ? 2.6 : 2.3,
+                        ),
+                        itemCount: accountState.accounts.length,
+                        itemBuilder: (context, index) => buildItem(context, index, true),
+                      );
+                    } else {
+                      return ListView.builder(
+                        padding: const EdgeInsets.all(12),
+                        itemCount: accountState.accounts.length,
+                        itemBuilder: (context, index) => buildItem(context, index, false),
+                      );
+                    }
                   },
                 ),
       floatingActionButton: FloatingActionButton(

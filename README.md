@@ -11,6 +11,8 @@ Offline-first Flutter money management app built using Clean Architecture.
 - **Transactions**: Add, edit, delete, and filter ledger records.
 - **Dashboard**: Monthly cash flow metrics, aggregate balance, recent transactions, and budget alerts.
 - **Reports/Budgets**: Category expense breakdowns, budget limit alerts, and linear progress indicators.
+- **Responsive Layout Design**: Adaptive layout shell wrapping screens in a full sidebar on Desktop (>=1100px), a compact navigation rail on Tablet (700px-1100px), and standard Drawer navigation on Mobile (<700px).
+- **Mobile Layout & Overflow Fixes**: Custom Row and Wrap layouts inside list items ensuring description texts and account names wrap cleanly on small screens without horizontal pixel overflows.
 
 ---
 

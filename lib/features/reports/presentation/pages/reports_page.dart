@@ -8,6 +8,8 @@ import 'package:phf_money_management/features/categories/presentation/providers/
 import 'package:phf_money_management/features/transactions/presentation/providers/transaction_provider.dart';
 import 'package:phf_money_management/features/settings/presentation/providers/currency_provider.dart';
 import 'package:phf_money_management/features/reports/domain/usecases/get_category_expense_breakdown.dart';
+import 'package:phf_money_management/core/utils/responsive.dart';
+
 
 class ReportsPage extends ConsumerWidget {
   const ReportsPage({super.key});
@@ -68,114 +70,172 @@ class ReportsPage extends ConsumerWidget {
         backgroundColor: const Color(0xFF1976D2),
         foregroundColor: Colors.white,
       ),
-      drawer: const AppDrawer(),
+      drawer: Responsive.isMobile(context) ? const AppDrawer() : null,
       body: categorySums.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          '📊',
-                          style: TextStyle(fontSize: 80),
-                        ),
-                        const SizedBox(height: 24),
-                        const Text(
-                          'No report data available.',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E293B),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'Add transactions to generate reports.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Color(0xFF64748B),
-                            height: 1.5,
-                          ),
-                        ),
-                      ],
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      '📊',
+                      style: TextStyle(fontSize: 80),
                     ),
-                  ),
-                )        : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Expense Breakdown by Category',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF0D47A1),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Pie Chart Container
-                  SizedBox(
-                    height: 200,
-                    child: PieChart(
-                      PieChartData(
-                        sections: getSections(),
-                        centerSpaceRadius: 40,
-                        sectionsSpace: 2,
+                    const SizedBox(height: 24),
+                    const Text(
+                      'No report data available.',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E293B),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 32),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Add transactions to generate reports.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF64748B),
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 700;
 
-                  Text(
-                    'Total Expenses: ${currencyFormat.format(totalExpenses)}',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
-                  ),
-                  const SizedBox(height: 16),
+                final chartSection = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Expense Breakdown by Category',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0D47A1),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
 
-                  // Detail Category Breakdowns List
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: categorySums.length,
-                    itemBuilder: (context, index) {
-                      final entry = categorySums.entries.toList()[index];
-                      final catId = entry.key;
-                      final amount = entry.value;
-                      final percentage = totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0.0;
+                    // Pie Chart Container
+                    SizedBox(
+                      height: 200,
+                      child: PieChart(
+                        PieChartData(
+                          sections: getSections(),
+                          centerSpaceRadius: 40,
+                          sectionsSpace: 2,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
 
-                      final category = categoryState.categories.firstWhere(
-                        (c) => c.id == catId,
-                        orElse: () => const Category(id: 0, name: 'Other', type: 'Expense'),
-                      );
+                    Text(
+                      'Total Expenses: ${currencyFormat.format(totalExpenses)}',
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                    ),
+                  ],
+                );
 
-                      final color = category.color != null ? _hexToColor(category.color) : Colors.blue;
+                final listSection = ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: categorySums.length,
+                  itemBuilder: (context, index) {
+                    final entry = categorySums.entries.toList()[index];
+                    final catId = entry.key;
+                    final amount = entry.value;
+                    final percentage = totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0.0;
 
-                      return Card(
-                        child: ListTile(
-                          leading: Container(
-                            width: 16,
-                            height: 16,
-                            decoration: BoxDecoration(
-                              color: color,
-                              shape: BoxShape.circle,
-                            ),
+                    final category = categoryState.categories.firstWhere(
+                      (c) => c.id == catId,
+                      orElse: () => const Category(id: 0, name: 'Other', type: 'Expense'),
+                    );
+
+                    final color = category.color != null ? _hexToColor(category.color) : Colors.blue;
+
+                    return Card(
+                      child: ListTile(
+                        leading: Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
                           ),
-                          title: Text(category.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: Text('${percentage.toStringAsFixed(1)}% of total expenses'),
-                          trailing: Text(
+                        ),
+                        title: Text(
+                          category.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          '${percentage.toStringAsFixed(1)}% of total expenses',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
                             currencyFormat.format(amount),
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                           ),
                         ),
-                      );
-                    },
-                  ),
-                ],
-              ),
+                      ),
+                    );
+                  },
+                );
+
+                if (isWide) {
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1100),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 5,
+                              child: Card(
+                                elevation: 2,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(24.0),
+                                  child: chartSection,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 24),
+                            Expanded(
+                              flex: 5,
+                              child: listSection,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                } else {
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        chartSection,
+                        const SizedBox(height: 24),
+                        listSection,
+                      ],
+                    ),
+                  );
+                }
+              },
             ),
     );
   }

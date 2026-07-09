@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phf_money_management/core/widgets/app_drawer.dart';
 import 'package:phf_money_management/features/categories/domain/entities/category.dart';
 import 'package:phf_money_management/features/categories/presentation/providers/category_provider.dart';
+import 'package:phf_money_management/core/utils/responsive.dart';
+
 
 class CategoriesPage extends ConsumerStatefulWidget {
   const CategoriesPage({super.key});
@@ -81,7 +83,7 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage> {
         backgroundColor: const Color(0xFF1976D2),
         foregroundColor: Colors.white,
       ),
-      drawer: const AppDrawer(),
+      drawer: Responsive.isMobile(context) ? const AppDrawer() : null,
       body: categoryState.isLoading
           ? const Center(child: CircularProgressIndicator())
           : categoryState.categories.isEmpty
@@ -118,85 +120,111 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage> {
                     ),
                   ),
                 )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: categoryState.categories.length,
-                  itemBuilder: (context, index) {
-                    final cat = categoryState.categories[index];
-                    final displayColor = _hexToColor(cat.color);
-                    final isExpense = cat.type.toLowerCase() == 'expense';
+              : LayoutBuilder(
+                  builder: (context, constraints) {
+                    final useGrid = constraints.maxWidth >= 600;
 
-                    return Card(
-                      elevation: 1,
-                      margin: const EdgeInsets.symmetric(vertical: 6),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: displayColor.withValues(alpha: 0.1),
-                          child: Icon(_getIconData(cat.icon), color: displayColor),
-                        ),
-                        title: Text(
-                          cat.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          cat.type,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isExpense ? Colors.red[800] : Colors.green[800],
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 12,
-                              height: 12,
-                              decoration: BoxDecoration(
-                                color: displayColor,
-                                shape: BoxShape.circle,
+                    Widget buildItem(BuildContext context, int index, bool isGrid) {
+                      final cat = categoryState.categories[index];
+                      final displayColor = _hexToColor(cat.color);
+                      final isExpense = cat.type.toLowerCase() == 'expense';
+
+                      return Card(
+                        elevation: 1,
+                        margin: isGrid ? EdgeInsets.zero : const EdgeInsets.symmetric(vertical: 6),
+                        child: Center(
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: displayColor.withValues(alpha: 0.1),
+                              child: Icon(_getIconData(cat.icon), color: displayColor),
+                            ),
+                            title: Text(
+                              cat.name,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Text(
+                              cat.type,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isExpense ? Colors.red[800] : Colors.green[800],
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            PopupMenuButton<String>(
-                              icon: const Icon(Icons.more_vert_rounded),
-                              onSelected: (value) {
-                                if (value == 'edit') {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AddCategoryDialog(category: cat),
-                                  );
-                                } else if (value == 'delete') {
-                                  _showDeleteConfirmationDialog(context, cat);
-                                }
-                              },
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(
-                                  value: 'edit',
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.edit_rounded, size: 18),
-                                      SizedBox(width: 8),
-                                      Text('Edit'),
-                                    ],
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 12,
+                                  height: 12,
+                                  decoration: BoxDecoration(
+                                    color: displayColor,
+                                    shape: BoxShape.circle,
                                   ),
                                 ),
-                                const PopupMenuItem(
-                                  value: 'delete',
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.delete_rounded, color: Colors.red, size: 18),
-                                      SizedBox(width: 8),
-                                      Text('Delete', style: TextStyle(color: Colors.red)),
-                                    ],
-                                  ),
+                                const SizedBox(width: 8),
+                                PopupMenuButton<String>(
+                                  icon: const Icon(Icons.more_vert_rounded),
+                                  onSelected: (value) {
+                                    if (value == 'edit') {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AddCategoryDialog(category: cat),
+                                      );
+                                    } else if (value == 'delete') {
+                                      _showDeleteConfirmationDialog(context, cat);
+                                    }
+                                  },
+                                  itemBuilder: (context) => [
+                                    const PopupMenuItem(
+                                      value: 'edit',
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.edit_rounded, size: 18),
+                                          SizedBox(width: 8),
+                                          Text('Edit'),
+                                        ],
+                                      ),
+                                    ),
+                                    const PopupMenuItem(
+                                      value: 'delete',
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.delete_rounded, color: Colors.red, size: 18),
+                                          SizedBox(width: 8),
+                                          Text('Delete', style: TextStyle(color: Colors.red)),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ],
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    }
+
+                    if (useGrid) {
+                      return GridView.builder(
+                        padding: const EdgeInsets.all(16),
+                        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: constraints.maxWidth > 1200 ? 420 : 360,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: constraints.maxWidth > 1200 ? 2.8 : 2.5,
+                        ),
+                        itemCount: categoryState.categories.length,
+                        itemBuilder: (context, index) => buildItem(context, index, true),
+                      );
+                    } else {
+                      return ListView.builder(
+                        padding: const EdgeInsets.all(12),
+                        itemCount: categoryState.categories.length,
+                        itemBuilder: (context, index) => buildItem(context, index, false),
+                      );
+                    }
                   },
                 ),
       floatingActionButton: FloatingActionButton(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/widgets/responsive_layout_shell.dart';
 import '../../features/dashboard/presentation/pages/splash_page.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/accounts/presentation/pages/accounts_page.dart';
@@ -37,45 +38,53 @@ final router = GoRouter(
       path: '/',
       pageBuilder: (context, state) => _customTransition(const SplashPage(), state),
     ),
-    GoRoute(
-      path: '/dashboard',
-      pageBuilder: (context, state) => _customTransition(const DashboardPage(), state),
-    ),
-    GoRoute(
-      path: '/accounts',
-      pageBuilder: (context, state) => _customTransition(const AccountsPage(), state),
-    ),
-    GoRoute(
-      path: '/categories',
-      pageBuilder: (context, state) => _customTransition(const CategoriesPage(), state),
-    ),
-    GoRoute(
-      path: '/transactions',
-      pageBuilder: (context, state) => _customTransition(const TransactionsPage(), state),
-    ),
-    GoRoute(
-      path: '/add-transaction',
-      pageBuilder: (context, state) => _customTransition(const TransactionFormPage(), state),
-    ),
-    GoRoute(
-      path: '/edit-transaction/:id',
-      pageBuilder: (context, state) {
-        final idStr = state.pathParameters['id'];
-        final id = idStr != null ? int.tryParse(idStr) : null;
-        return _customTransition(TransactionFormPage(editTransactionId: id), state);
+    ShellRoute(
+      builder: (context, state, child) {
+        return ResponsiveLayoutShell(child: child);
       },
-    ),
-    GoRoute(
-      path: '/budgets',
-      pageBuilder: (context, state) => _customTransition(const BudgetsPage(), state),
-    ),
-    GoRoute(
-      path: '/reports',
-      pageBuilder: (context, state) => _customTransition(const ReportsPage(), state),
-    ),
-    GoRoute(
-      path: '/settings',
-      pageBuilder: (context, state) => _customTransition(const SettingsPage(), state),
+      routes: [
+        GoRoute(
+          path: '/dashboard',
+          pageBuilder: (context, state) => _customTransition(const DashboardPage(), state),
+        ),
+        GoRoute(
+          path: '/accounts',
+          pageBuilder: (context, state) => _customTransition(const AccountsPage(), state),
+        ),
+        GoRoute(
+          path: '/categories',
+          pageBuilder: (context, state) => _customTransition(const CategoriesPage(), state),
+        ),
+        GoRoute(
+          path: '/transactions',
+          pageBuilder: (context, state) => _customTransition(const TransactionsPage(), state),
+        ),
+        GoRoute(
+          path: '/add-transaction',
+          pageBuilder: (context, state) => _customTransition(const TransactionFormPage(), state),
+        ),
+        GoRoute(
+          path: '/edit-transaction/:id',
+          pageBuilder: (context, state) {
+            final idStr = state.pathParameters['id'];
+            final id = idStr != null ? int.tryParse(idStr) : null;
+            return _customTransition(TransactionFormPage(editTransactionId: id), state);
+          },
+        ),
+        GoRoute(
+          path: '/budgets',
+          pageBuilder: (context, state) => _customTransition(const BudgetsPage(), state),
+        ),
+        GoRoute(
+          path: '/reports',
+          pageBuilder: (context, state) => _customTransition(const ReportsPage(), state),
+        ),
+        GoRoute(
+          path: '/settings',
+          pageBuilder: (context, state) => _customTransition(const SettingsPage(), state),
+        ),
+      ],
     ),
   ],
 );
+

@@ -12,6 +12,8 @@ import 'package:phf_money_management/features/categories/presentation/providers/
 import 'package:phf_money_management/features/transactions/domain/entities/transaction.dart';
 import 'package:phf_money_management/features/transactions/presentation/providers/transaction_provider.dart';
 import 'package:phf_money_management/features/settings/presentation/providers/currency_provider.dart';
+import 'package:phf_money_management/core/utils/responsive.dart';
+
 
 String _getGreeting() {
   final hour = DateTime.now().hour;
@@ -146,8 +148,7 @@ class DashboardPage extends ConsumerWidget {
       }
     }
 
-    final width = MediaQuery.of(context).size.width;
-    final isTablet = width > 768;
+
 
     Widget mainContent = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,12 +240,16 @@ class DashboardPage extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              Text(
-                currencyFormat.format(totalBalance),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  currencyFormat.format(totalBalance),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -357,9 +362,13 @@ class DashboardPage extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Text(
-                      currencyFormat.format(monthlyIncome),
-                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        currencyFormat.format(monthlyIncome),
+                        style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ],
                 ),
@@ -398,9 +407,13 @@ class DashboardPage extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Text(
-                      currencyFormat.format(monthlyExpense),
-                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        currencyFormat.format(monthlyExpense),
+                        style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ],
                 ),
@@ -450,12 +463,16 @@ class DashboardPage extends ConsumerWidget {
                   ),
                 ],
               ),
-              Text(
-                currencyFormat.format(netCashFlow),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  currencyFormat.format(netCashFlow),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
                 ),
               ),
             ],
@@ -695,49 +712,56 @@ class DashboardPage extends ConsumerWidget {
         backgroundColor: const Color(0xFF1976D2),
         foregroundColor: Colors.white,
       ),
-      drawer: const AppDrawer(),
+      drawer: Responsive.isMobile(context) ? const AppDrawer() : null,
       body: (accountState.isLoading ||
               transactionState.isLoading ||
               categoryState.isLoading ||
               budgetState.isLoading)
           ? const Center(child: CircularProgressIndicator())
-          : isTablet
-              ? Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 5,
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: mainContent,
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth > 720;
+                if (isWide) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: SingleChildScrollView(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: mainContent,
+                          ),
                         ),
                       ),
-                    ),
-                    const VerticalDivider(width: 1),
-                    Expanded(
-                      flex: 5,
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: sideContent,
+                      const VerticalDivider(width: 1),
+                      Expanded(
+                        flex: 5,
+                        child: SingleChildScrollView(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: sideContent,
+                          ),
                         ),
                       ),
+                    ],
+                  );
+                } else {
+                  return SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          mainContent,
+                          const SizedBox(height: 24),
+                          sideContent,
+                        ],
+                      ),
                     ),
-                  ],
-                )
-              : SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        mainContent,
-                        const SizedBox(height: 24),
-                        sideContent,
-                      ],
-                    ),
-                  ),
-                ),
+                  );
+                }
+              },
+            ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.go('/add-transaction'),
         backgroundColor: const Color(0xFF1976D2),
