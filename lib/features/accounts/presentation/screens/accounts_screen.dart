@@ -183,15 +183,15 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
 
                     switch (acc.type.toLowerCase()) {
                       case 'bank':
-                        typeIcon = Icons.account_balance_rounded;
+                        typeIcon = Icons.account_balance;
                         typeColor = Colors.blue[800]!;
                         break;
                       case 'card':
-                        typeIcon = Icons.credit_card_rounded;
+                        typeIcon = Icons.account_balance_wallet;
                         typeColor = Colors.purple[800]!;
                         break;
                       default:
-                        typeIcon = Icons.money_rounded;
+                        typeIcon = Icons.payments;
                         typeColor = Colors.green[800]!;
                     }
 

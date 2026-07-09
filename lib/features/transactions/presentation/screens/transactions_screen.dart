@@ -169,7 +169,7 @@ class TransactionsScreen extends ConsumerWidget {
                         leading: CircleAvatar(
                           backgroundColor: isIncome ? Colors.green[50] : Colors.red[50],
                           child: Icon(
-                            isIncome ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
+                            isIncome ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
                             color: isIncome ? Colors.green[800] : Colors.red[800],
                           ),
                         ),

@@ -79,11 +79,11 @@ class AppDrawer extends StatelessWidget {
                 child: ListView(
                   children: [
                     buildMenuItem(Icons.dashboard_rounded, 'Dashboard', '/dashboard'),
-                    buildMenuItem(Icons.account_balance_rounded, 'Accounts', '/accounts'),
-                    buildMenuItem(Icons.category_rounded, 'Categories', '/categories'),
-                    buildMenuItem(Icons.compare_arrows_rounded, 'Transactions', '/transactions'),
-                    buildMenuItem(Icons.bar_chart_rounded, 'Reports', '/reports'),
-                    buildMenuItem(Icons.settings_rounded, 'Settings', '/settings'),
+                    buildMenuItem(Icons.account_balance_wallet, 'Accounts', '/accounts'),
+                    buildMenuItem(Icons.category, 'Categories', '/categories'),
+                    buildMenuItem(Icons.payments, 'Transactions', '/transactions'),
+                    buildMenuItem(Icons.bar_chart, 'Reports', '/reports'),
+                    buildMenuItem(Icons.settings, 'Settings', '/settings'),
                   ],
                 ),
               ),

@@ -224,7 +224,7 @@ class DashboardScreen extends ConsumerWidget {
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.arrow_downward_rounded, color: Colors.green[800], size: 20),
+                              Icon(Icons.arrow_upward_rounded, color: Colors.green[800], size: 20),
                               const SizedBox(width: 4),
                               Text('Income', style: TextStyle(color: Colors.green[800], fontWeight: FontWeight.bold)),
                             ],
@@ -252,7 +252,7 @@ class DashboardScreen extends ConsumerWidget {
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.arrow_upward_rounded, color: Colors.red[800], size: 20),
+                              Icon(Icons.arrow_downward_rounded, color: Colors.red[800], size: 20),
                               const SizedBox(width: 4),
                               Text('Expenses', style: TextStyle(color: Colors.red[800], fontWeight: FontWeight.bold)),
                             ],
@@ -454,7 +454,7 @@ class DashboardScreen extends ConsumerWidget {
                         leading: CircleAvatar(
                           backgroundColor: isIncome ? Colors.green[100] : Colors.red[100],
                           child: Icon(
-                            isIncome ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
+                            isIncome ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
                             color: isIncome ? Colors.green[800] : Colors.red[800],
                           ),
                         ),
