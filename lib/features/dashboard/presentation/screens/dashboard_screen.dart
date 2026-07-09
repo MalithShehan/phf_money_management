@@ -115,14 +115,24 @@ class DashboardScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'TOTAL BALANCE',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'TOTAL BALANCE',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        Icon(
+                          Icons.account_balance_wallet_rounded,
+                          color: Colors.white.withOpacity(0.7),
+                          size: 24,
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -215,24 +225,37 @@ class DashboardScreen extends ConsumerWidget {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.green[50],
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.green[100]!),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF2E7D32).withOpacity(0.25),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
+                          const Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Icon(Icons.arrow_upward_rounded, color: Colors.green[800], size: 20),
-                              const SizedBox(width: 4),
-                              Text('Income', style: TextStyle(color: Colors.green[800], fontWeight: FontWeight.bold)),
+                              Text(
+                                'Income',
+                                style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                              Icon(Icons.arrow_upward_rounded, color: Colors.white, size: 20),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 12),
                           Text(
                             currencyFormat.format(monthlyIncome),
-                            style: TextStyle(color: Colors.green[900], fontSize: 18, fontWeight: FontWeight.bold),
+                            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
@@ -243,24 +266,37 @@ class DashboardScreen extends ConsumerWidget {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.red[50],
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.red[100]!),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFC62828), Color(0xFFEF5350)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFC62828).withOpacity(0.25),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
+                          const Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Icon(Icons.arrow_downward_rounded, color: Colors.red[800], size: 20),
-                              const SizedBox(width: 4),
-                              Text('Expenses', style: TextStyle(color: Colors.red[800], fontWeight: FontWeight.bold)),
+                              Text(
+                                'Expenses',
+                                style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                              Icon(Icons.arrow_downward_rounded, color: Colors.white, size: 20),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 12),
                           Text(
                             currencyFormat.format(monthlyExpense),
-                            style: TextStyle(color: Colors.red[900], fontSize: 18, fontWeight: FontWeight.bold),
+                            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
@@ -275,24 +311,45 @@ class DashboardScreen extends ConsumerWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: netCashFlow >= 0 ? Colors.blue[50] : Colors.orange[50],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: netCashFlow >= 0 ? Colors.blue[100]! : Colors.orange[100]!),
+                  gradient: LinearGradient(
+                    colors: netCashFlow >= 0
+                        ? [const Color(0xFF00796B), const Color(0xFF26A69A)]
+                        : [const Color(0xFFE65100), const Color(0xFFFF9800)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (netCashFlow >= 0 ? const Color(0xFF00796B) : const Color(0xFFE65100)).withOpacity(0.25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Net Savings (Income - Expense)',
-                      style: TextStyle(
-                        color: netCashFlow >= 0 ? Colors.blue[800] : Colors.orange[800],
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      children: [
+                        Icon(
+                          netCashFlow >= 0 ? Icons.trending_up_rounded : Icons.trending_down_rounded,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Net Savings',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                     Text(
                       currencyFormat.format(netCashFlow),
-                      style: TextStyle(
-                        color: netCashFlow >= 0 ? Colors.blue[900] : Colors.orange[900],
+                      style: const TextStyle(
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                       ),
