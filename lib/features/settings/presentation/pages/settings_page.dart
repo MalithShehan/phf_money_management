@@ -16,86 +16,135 @@ class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
 
   Future<void> _generateSampleData(BuildContext context, WidgetRef ref) async {
-    // 1. Generate Categories
-    final categories = [
-      const Category(id: 1, name: 'Salary', type: 'Income', icon: 'salary', color: '#2E7D32'),
-      const Category(id: 2, name: 'Freelance', type: 'Income', icon: 'salary', color: '#1565C0'),
-      const Category(id: 3, name: 'Food & Dining', type: 'Expense', icon: 'restaurant', color: '#EF6C00'),
-      const Category(id: 4, name: 'Transportation', type: 'Expense', icon: 'car', color: '#1565C0'),
-      const Category(id: 5, name: 'Rent & Bills', type: 'Expense', icon: 'home', color: '#C62828'),
-      const Category(id: 6, name: 'Shopping', type: 'Expense', icon: 'shopping', color: '#6A1B9A'),
-    ];
+    // 1. Reset database tables first to make sure we start fresh
+    await ref.read(databaseProvider).resetDatabase();
+    
+    // Invalidate state to let notifier re-initialize
+    ref.invalidate(categoryProvider);
+    ref.invalidate(accountProvider);
+    ref.invalidate(transactionProvider);
 
-    for (final cat in categories) {
-      await ref.read(categoryProvider.notifier).addCategory(cat);
+    // Wait briefly for the state to re-evaluate and seed defaults
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // Get current categories (seeded automatically on database empty check)
+    var currentCategories = ref.read(categoryProvider).categories;
+
+    // Helper map to resolve category name to ID
+    final Map<String, int> categoryIds = {};
+    for (final cat in currentCategories) {
+      categoryIds[cat.name.toLowerCase()] = cat.id;
     }
 
-    // 2. Generate Accounts
-    final accounts = [
-      const Account(id: 1, name: 'Commercial Bank', balance: 145000.0, type: 'Bank'),
-      const Account(id: 2, name: 'Cash Account', balance: 25000.0, type: 'Cash'),
-      const Account(id: 3, name: 'Amex Credit Card', balance: -12000.0, type: 'Card'),
+    // Check/insert custom categories
+    final customCategories = [
+      const Category(id: 0, name: 'Freelance', type: 'Income', icon: 'salary', color: '#1565C0'),
+      const Category(id: 0, name: 'Transportation', type: 'Expense', icon: 'car', color: '#1565C0'),
+      const Category(id: 0, name: 'Rent & Bills', type: 'Expense', icon: 'home', color: '#C62828'),
+      const Category(id: 0, name: 'Food & Dining', type: 'Expense', icon: 'restaurant', color: '#EF6C00'),
     ];
 
-    for (final acc in accounts) {
+    for (final cat in customCategories) {
+      final key = cat.name.toLowerCase();
+      // If we don't have this category or a close match, add it
+      if (!categoryIds.containsKey(key)) {
+        // Special case: check if we have a default category matching
+        String? matchName;
+        if (key == 'transportation') matchName = 'transport';
+        if (key == 'food & dining') matchName = 'food';
+        if (key == 'rent & bills') matchName = 'home/rent';
+
+        if (matchName != null && categoryIds.containsKey(matchName)) {
+          categoryIds[key] = categoryIds[matchName]!;
+        } else {
+          await ref.read(categoryProvider.notifier).addCategory(cat);
+        }
+      }
+    }
+
+    // Re-retrieve categories to get the added custom categories
+    final updatedCategories = ref.read(categoryProvider).categories;
+    for (final cat in updatedCategories) {
+      categoryIds[cat.name.toLowerCase()] = cat.id;
+    }
+
+    // 2. Generate Accounts with id: 0 to autoincrement
+    final accountsToCreate = [
+      const Account(id: 0, name: 'Commercial Bank', balance: 145000.0, type: 'Bank'),
+      const Account(id: 0, name: 'Cash Account', balance: 25000.0, type: 'Cash'),
+      const Account(id: 0, name: 'Amex Credit Card', balance: -12000.0, type: 'Card'),
+    ];
+
+    final Map<String, int> accountIds = {};
+    for (final acc in accountsToCreate) {
       await ref.read(accountProvider.notifier).addAccount(acc);
     }
+
+    // Retrieve accounts to get their assigned IDs
+    final createdAccounts = ref.read(accountProvider).accounts;
+    for (final acc in createdAccounts) {
+      accountIds[acc.name.toLowerCase()] = acc.id;
+    }
+
+    // Helper functions to safely get IDs
+    int getCatId(String name) => categoryIds[name.toLowerCase()] ?? (categoryIds.values.isNotEmpty ? categoryIds.values.first : 0);
+    int getAccId(String name) => accountIds[name.toLowerCase()] ?? (accountIds.values.isNotEmpty ? accountIds.values.first : 0);
 
     // 3. Generate Transactions
     final transactions = [
       Transaction(
-        id: 1,
-        accountId: 1,
-        categoryId: 1,
+        id: 0,
+        accountId: getAccId('Commercial Bank'),
+        categoryId: getCatId('Salary'),
         amount: 125000.0,
         type: 'Income',
         date: DateTime.now().subtract(const Duration(days: 5)),
         description: 'Monthly Salary Credit',
       ),
       Transaction(
-        id: 2,
-        accountId: 1,
-        categoryId: 5,
+        id: 0,
+        accountId: getAccId('Commercial Bank'),
+        categoryId: getCatId('Rent & Bills'),
         amount: 35000.0,
         type: 'Expense',
         date: DateTime.now().subtract(const Duration(days: 4)),
         description: 'Apartment Monthly Rent',
       ),
       Transaction(
-        id: 3,
-        accountId: 2,
-        categoryId: 3,
+        id: 0,
+        accountId: getAccId('Cash Account'),
+        categoryId: getCatId('Food & Dining'),
         amount: 2500.0,
         type: 'Expense',
         date: DateTime.now().subtract(const Duration(days: 3)),
         description: 'Dinner at restaurant',
       ),
       Transaction(
-        id: 4,
-        accountId: 2,
-        categoryId: 4,
+        id: 0,
+        accountId: getAccId('Cash Account'),
+        categoryId: getCatId('Transportation'),
         amount: 450.0,
         type: 'Expense',
         date: DateTime.now().subtract(const Duration(days: 2)),
         description: 'Tuk tuk transport',
       ),
       Transaction(
-        id: 5,
-        accountId: 3,
-        categoryId: 6,
+        id: 0,
+        accountId: getAccId('Amex Credit Card'),
+        categoryId: getCatId('Shopping'),
         amount: 8500.0,
         type: 'Expense',
         date: DateTime.now().subtract(const Duration(days: 1)),
         description: 'Buying clothes',
       ),
       Transaction(
-        id: 6,
-        accountId: 2, // Cash Account
-        categoryId: 1, // Salary
+        id: 0,
+        accountId: getAccId('Cash Account'),
+        categoryId: getCatId('Salary'),
         amount: 25000.0,
         type: 'Income',
-        date: DateTime.now(), // Today
-        description: 'Salary',
+        date: DateTime.now(),
+        description: 'Part-time payment',
       ),
     ];
 
