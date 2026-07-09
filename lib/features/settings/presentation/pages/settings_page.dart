@@ -292,6 +292,34 @@ class SettingsPage extends ConsumerWidget {
           const SizedBox(height: 24),
 
           const Text(
+            'Security',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF0D47A1),
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          Card(
+            elevation: 2,
+            child: SwitchListTile(
+              secondary: const Icon(Icons.lock_outline_rounded, color: Color(0xFF1976D2)),
+              title: const Text('App Lock (PIN/Biometric)', style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: const Text('Requires local authentication on app startup (Placeholder).'),
+              value: false,
+              onChanged: (bool value) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('App Lock placeholder toggled! Full biometric integration is planned for Version 2.0.'),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          const Text(
             'Database & Diagnostics',
             style: TextStyle(
               fontSize: 18,
