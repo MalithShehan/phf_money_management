@@ -185,7 +185,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
 
                     // Account Dropdown
                     DropdownButtonFormField<int>(
-                      value: _selectedAccountId,
+                      initialValue: _selectedAccountId,
                       decoration: const InputDecoration(
                         labelText: 'Select Account',
                         prefixIcon: Icon(Icons.account_balance_rounded),
@@ -213,7 +213,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
 
                     // Category Dropdown
                     DropdownButtonFormField<int>(
-                      value: _selectedCategoryId,
+                      initialValue: _selectedCategoryId,
                       decoration: const InputDecoration(
                         labelText: 'Select Category',
                         prefixIcon: Icon(Icons.category_rounded),
@@ -321,7 +321,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                                   balance: updatedBalance,
                                   type: accountToUpdate.type,
                                 );
-                                ref.read(accountProvider.notifier).addAccount(updatedAccount); // will update due to same ID
+                                ref.read(accountProvider.notifier).updateAccount(updatedAccount);
 
                                 context.go('/transactions');
 

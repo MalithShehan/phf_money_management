@@ -75,7 +75,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                         balance: updatedBalance,
                         type: accountToUpdate.type,
                       );
-                      ref.read(accountProvider.notifier).addAccount(updatedAccount);
+                      ref.read(accountProvider.notifier).updateAccount(updatedAccount);
                     }
                   } catch (_) {}
 
@@ -362,7 +362,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                               decoration: BoxDecoration(
-                                                color: catColor.withOpacity(0.1),
+                                                color: catColor.withValues(alpha: 0.1),
                                                 borderRadius: BorderRadius.circular(4),
                                               ),
                                               child: Text(

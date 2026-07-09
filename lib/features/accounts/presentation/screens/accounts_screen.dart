@@ -60,7 +60,7 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
-                        value: localSelectedType,
+                        initialValue: localSelectedType,
                         decoration: const InputDecoration(labelText: 'Account Type'),
                         items: const [
                           DropdownMenuItem(value: 'Cash', child: Text('Cash')),
@@ -199,7 +199,7 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
                         leading: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: typeColor.withOpacity(0.1),
+                            color: typeColor.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(typeIcon, color: typeColor),

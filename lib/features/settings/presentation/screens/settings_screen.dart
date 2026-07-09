@@ -29,7 +29,7 @@ class SettingsScreen extends ConsumerWidget {
     // 2. Generate Accounts
     final accounts = [
       const Account(id: 1, name: 'Commercial Bank', balance: 145000.0, type: 'Bank'),
-      const Account(id: 2, name: 'Physical Cash Wallet', balance: 8500.0, type: 'Cash'),
+      const Account(id: 2, name: 'Cash Account', balance: 25000.0, type: 'Cash'),
       const Account(id: 3, name: 'Amex Credit Card', balance: -12000.0, type: 'Card'),
     ];
 
@@ -83,6 +83,15 @@ class SettingsScreen extends ConsumerWidget {
         type: 'Expense',
         date: DateTime.now().subtract(const Duration(days: 1)),
         description: 'Buying clothes',
+      ),
+      Transaction(
+        id: 6,
+        accountId: 2, // Cash Account
+        categoryId: 1, // Salary
+        amount: 25000.0,
+        type: 'Income',
+        date: DateTime.now(), // Today
+        description: 'Salary',
       ),
     ];
 

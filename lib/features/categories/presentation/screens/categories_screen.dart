@@ -74,7 +74,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
-                        value: localSelectedType,
+                        initialValue: localSelectedType,
                         decoration: const InputDecoration(labelText: 'Category Type'),
                         items: const [
                           DropdownMenuItem(value: 'Income', child: Text('Income')),
@@ -90,7 +90,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
-                        value: localSelectedColor,
+                        initialValue: localSelectedColor,
                         decoration: const InputDecoration(labelText: 'Display Color'),
                         items: _colorOptions.map((opt) {
                           return DropdownMenuItem<String>(
@@ -121,7 +121,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
-                        value: localSelectedIcon,
+                        initialValue: localSelectedIcon,
                         decoration: const InputDecoration(labelText: 'Category Icon'),
                         items: _iconOptions.map<DropdownMenuItem<String>>((opt) {
                           return DropdownMenuItem<String>(
@@ -250,7 +250,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                       margin: const EdgeInsets.symmetric(vertical: 6),
                       child: ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: displayColor.withOpacity(0.1),
+                          backgroundColor: displayColor.withValues(alpha: 0.1),
                           child: Icon(_getIconData(cat.icon), color: displayColor),
                         ),
                         title: Text(

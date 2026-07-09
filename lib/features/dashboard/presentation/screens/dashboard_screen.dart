@@ -208,7 +208,7 @@ class DashboardScreen extends ConsumerWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF0D47A1).withOpacity(0.3),
+                color: const Color(0xFF0D47A1).withValues(alpha: 0.3),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -231,7 +231,7 @@ class DashboardScreen extends ConsumerWidget {
                   ),
                   Icon(
                     Icons.account_balance_wallet_rounded,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     size: 24,
                   ),
                 ],
@@ -308,7 +308,7 @@ class DashboardScreen extends ConsumerWidget {
                           Expanded(
                             child: Text(
                               warning,
-                              style: TextStyle(color: Colors.red[955], fontSize: 12),
+                              style: TextStyle(color: Colors.red[900], fontSize: 12),
                             ),
                           ),
                         ],
@@ -335,7 +335,7 @@ class DashboardScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF2E7D32).withOpacity(0.25),
+                      color: const Color(0xFF2E7D32).withValues(alpha: 0.25),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -376,7 +376,7 @@ class DashboardScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFC62828).withOpacity(0.25),
+                      color: const Color(0xFFC62828).withValues(alpha: 0.25),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -423,7 +423,7 @@ class DashboardScreen extends ConsumerWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: (netCashFlow >= 0 ? const Color(0xFF00796B) : const Color(0xFFE65100)).withOpacity(0.25),
+                color: (netCashFlow >= 0 ? const Color(0xFF00796B) : const Color(0xFFE65100)).withValues(alpha: 0.25),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
