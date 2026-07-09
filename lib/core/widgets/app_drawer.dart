@@ -82,6 +82,7 @@ class AppDrawer extends StatelessWidget {
                     buildMenuItem(Icons.account_balance_wallet, 'Accounts', '/accounts'),
                     buildMenuItem(Icons.category, 'Categories', '/categories'),
                     buildMenuItem(Icons.payments, 'Transactions', '/transactions'),
+                    buildMenuItem(Icons.track_changes_rounded, 'Budgets', '/budgets'),
                     buildMenuItem(Icons.bar_chart, 'Reports', '/reports'),
                     buildMenuItem(Icons.settings, 'Settings', '/settings'),
                   ],

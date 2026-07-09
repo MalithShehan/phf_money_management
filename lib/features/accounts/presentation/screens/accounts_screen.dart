@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:phf_money_management/core/widgets/app_drawer.dart';
 import 'package:phf_money_management/features/accounts/domain/entities/account.dart';
 import 'package:phf_money_management/features/accounts/presentation/providers/account_provider.dart';
+import 'package:phf_money_management/features/settings/presentation/providers/currency_provider.dart';
 
 class AccountsScreen extends ConsumerStatefulWidget {
   const AccountsScreen({super.key});
@@ -13,12 +14,48 @@ class AccountsScreen extends ConsumerStatefulWidget {
 }
 
 class _AccountsScreenState extends ConsumerState<AccountsScreen> {
-
+  void _showDeleteConfirmationDialog(BuildContext context, Account account) {
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('Delete Account?', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Text(
+          'Are you sure you want to delete "${account.name}"? '
+          'This will permanently delete all transactions associated with this account.',
+          style: const TextStyle(color: Color(0xFF64748B)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(),
+            child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B))),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              ref.read(accountProvider.notifier).deleteAccount(account.id);
+              Navigator.of(dialogCtx).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Account "${account.name}" deleted.'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD32F2F),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final accountState = ref.watch(accountProvider);
-    final currencyFormat = NumberFormat.currency(symbol: 'Rs. ', decimalDigits: 2);
+    final currencySymbol = ref.watch(currencyProvider);
+    final currencyFormat = NumberFormat.currency(symbol: '$currencySymbol ', decimalDigits: 2);
 
     return Scaffold(
       appBar: AppBar(
@@ -119,13 +156,53 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
                             ],
                           ),
                         ),
-                        trailing: Text(
-                          currencyFormat.format(acc.balance),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: acc.balance >= 0 ? Colors.green[800] : Colors.red[800],
-                          ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              currencyFormat.format(acc.balance),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: acc.balance >= 0 ? Colors.green[800] : Colors.red[800],
+                              ),
+                            ),
+                            PopupMenuButton<String>(
+                              icon: const Icon(Icons.more_vert_rounded),
+                              onSelected: (value) {
+                                if (value == 'edit') {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AddAccountDialog(account: acc),
+                                  );
+                                } else if (value == 'delete') {
+                                  _showDeleteConfirmationDialog(context, acc);
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  value: 'edit',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.edit_rounded, size: 18),
+                                      SizedBox(width: 8),
+                                      Text('Edit'),
+                                    ],
+                                  ),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'delete',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.delete_rounded, color: Colors.red, size: 18),
+                                      SizedBox(width: 8),
+                                      Text('Delete', style: TextStyle(color: Colors.red)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     );
@@ -146,7 +223,8 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
 }
 
 class AddAccountDialog extends ConsumerStatefulWidget {
-  const AddAccountDialog({super.key});
+  final Account? account;
+  const AddAccountDialog({super.key, this.account});
 
   @override
   ConsumerState<AddAccountDialog> createState() => _AddAccountDialogState();
@@ -161,8 +239,11 @@ class _AddAccountDialogState extends ConsumerState<AddAccountDialog> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController();
-    _balanceController = TextEditingController();
+    _nameController = TextEditingController(text: widget.account?.name);
+    _balanceController = TextEditingController(text: widget.account?.balance.toString());
+    if (widget.account != null) {
+      _selectedType = widget.account!.type;
+    }
   }
 
   @override
@@ -174,8 +255,10 @@ class _AddAccountDialogState extends ConsumerState<AddAccountDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isEditing = widget.account != null;
+    final currencySymbol = ref.watch(currencyProvider);
     return AlertDialog(
-      title: const Text('Add New Account'),
+      title: Text(isEditing ? 'Edit Account' : 'Add New Account'),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -195,7 +278,7 @@ class _AddAccountDialogState extends ConsumerState<AddAccountDialog> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _balanceController,
-                decoration: const InputDecoration(labelText: 'Initial Balance (Rs.)'),
+                decoration: InputDecoration(labelText: 'Initial Balance ($currencySymbol)'),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -209,7 +292,7 @@ class _AddAccountDialogState extends ConsumerState<AddAccountDialog> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                initialValue: _selectedType,
+                value: _selectedType,
                 decoration: const InputDecoration(labelText: 'Account Type'),
                 items: const [
                   DropdownMenuItem(value: 'Cash', child: Text('Cash')),
@@ -239,18 +322,28 @@ class _AddAccountDialogState extends ConsumerState<AddAccountDialog> {
           onPressed: () {
             if (_formKey.currentState!.validate()) {
               final newAccount = Account(
-                id: 0, // database will auto-increment
+                id: isEditing ? widget.account!.id : 0,
                 name: _nameController.text.trim(),
                 balance: double.parse(_balanceController.text.trim()),
                 type: _selectedType,
               );
 
-              ref.read(accountProvider.notifier).addAccount(newAccount);
+              if (isEditing) {
+                ref.read(accountProvider.notifier).updateAccount(newAccount);
+              } else {
+                ref.read(accountProvider.notifier).addAccount(newAccount);
+              }
 
               Navigator.of(context).pop();
 
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Account "${newAccount.name}" created successfully!')),
+                SnackBar(
+                  content: Text(
+                    isEditing 
+                        ? 'Account "${newAccount.name}" updated successfully!'
+                        : 'Account "${newAccount.name}" created successfully!'
+                  ),
+                ),
               );
             }
           },
@@ -258,7 +351,7 @@ class _AddAccountDialogState extends ConsumerState<AddAccountDialog> {
             backgroundColor: const Color(0xFF1976D2),
             foregroundColor: Colors.white,
           ),
-          child: const Text('Save'),
+          child: Text(isEditing ? 'Save' : 'Add'),
         ),
       ],
     );

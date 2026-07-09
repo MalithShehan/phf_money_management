@@ -6,6 +6,7 @@ import 'package:phf_money_management/core/widgets/app_drawer.dart';
 import 'package:phf_money_management/features/categories/domain/entities/category.dart';
 import 'package:phf_money_management/features/categories/presentation/providers/category_provider.dart';
 import 'package:phf_money_management/features/transactions/presentation/providers/transaction_provider.dart';
+import 'package:phf_money_management/features/settings/presentation/providers/currency_provider.dart';
 
 class ReportsScreen extends ConsumerWidget {
   const ReportsScreen({super.key});
@@ -33,7 +34,8 @@ class ReportsScreen extends ConsumerWidget {
       categorySums[exp.categoryId] = (categorySums[exp.categoryId] ?? 0.0) + exp.amount;
     }
 
-    final currencyFormat = NumberFormat.currency(symbol: 'Rs. ', decimalDigits: 2);
+    final currencySymbol = ref.watch(currencyProvider);
+    final currencyFormat = NumberFormat.currency(symbol: '$currencySymbol ', decimalDigits: 2);
 
     List<PieChartSectionData> getSections() {
       int colorIndex = 0;

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:phf_money_management/core/widgets/app_drawer.dart';
+import 'package:phf_money_management/features/settings/presentation/providers/currency_provider.dart';
 import 'package:phf_money_management/features/accounts/domain/entities/account.dart';
 import 'package:phf_money_management/features/accounts/presentation/providers/account_provider.dart';
 import 'package:phf_money_management/features/categories/domain/entities/category.dart';
@@ -32,7 +33,8 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     final accountState = ref.watch(accountProvider);
     final categoryState = ref.watch(categoryProvider);
 
-    final currencyFormat = NumberFormat.currency(symbol: 'Rs. ', decimalDigits: 2);
+    final currencySymbol = ref.watch(currencyProvider);
+    final currencyFormat = NumberFormat.currency(symbol: '$currencySymbol ', decimalDigits: 2);
 
     void showDeleteConfirmation(BuildContext ctx, int id, String description) {
       showDialog(
@@ -396,6 +398,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                                           ),
                                         ),
                                         const SizedBox(width: 8),
+                                        IconButton(
+                                          icon: Icon(Icons.edit_outlined, color: Colors.grey[500], size: 20),
+                                          onPressed: () => context.go('/edit-transaction/${tx.id}'),
+                                        ),
                                         IconButton(
                                           icon: Icon(Icons.delete_outline_rounded, color: Colors.grey[500], size: 20),
                                           onPressed: () => showDeleteConfirmation(

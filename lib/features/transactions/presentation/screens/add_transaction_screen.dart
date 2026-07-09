@@ -7,9 +7,11 @@ import 'package:phf_money_management/features/accounts/presentation/providers/ac
 import 'package:phf_money_management/features/categories/presentation/providers/category_provider.dart';
 import 'package:phf_money_management/features/transactions/domain/entities/transaction.dart';
 import 'package:phf_money_management/features/transactions/presentation/providers/transaction_provider.dart';
+import 'package:phf_money_management/features/settings/presentation/providers/currency_provider.dart';
 
 class AddTransactionScreen extends ConsumerStatefulWidget {
-  const AddTransactionScreen({super.key});
+  final int? editTransactionId;
+  const AddTransactionScreen({super.key, this.editTransactionId});
 
   @override
   ConsumerState<AddTransactionScreen> createState() => _AddTransactionScreenState();
@@ -24,6 +26,32 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
   int? _selectedCategoryId;
   String _selectedType = 'Expense';
   DateTime _selectedDate = DateTime.now();
+
+  Transaction? _originalTransaction;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.editTransactionId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final txs = ref.read(transactionProvider).transactions;
+        try {
+          final tx = txs.firstWhere((t) => t.id == widget.editTransactionId);
+          setState(() {
+            _originalTransaction = tx;
+            _amountController.text = tx.amount.toString();
+            _descriptionController.text = tx.description ?? '';
+            _selectedAccountId = tx.accountId;
+            _selectedCategoryId = tx.categoryId;
+            _selectedType = tx.type;
+            _selectedDate = tx.date;
+          });
+        } catch (e) {
+          // Transaction not found
+        }
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -62,6 +90,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
   Widget build(BuildContext context) {
     final accountState = ref.watch(accountProvider);
     final categoryState = ref.watch(categoryProvider);
+    final currencySymbol = ref.watch(currencyProvider);
 
     // Filter categories by selected type (Income/Expense) to keep UI intuitive
     final filteredCategories = categoryState.categories
@@ -70,7 +99,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Transaction'),
+        title: Text(widget.editTransactionId != null ? 'Edit Transaction' : 'Add Transaction'),
         backgroundColor: const Color(0xFF1976D2),
         foregroundColor: Colors.white,
         leading: IconButton(
@@ -180,10 +209,10 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                     // Amount Text Field
                     TextFormField(
                       controller: _amountController,
-                      decoration: const InputDecoration(
-                        labelText: 'Amount (Rs.)',
-                        prefixIcon: Icon(Icons.monetization_on_outlined),
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: 'Amount ($currencySymbol)',
+                        prefixIcon: const Icon(Icons.monetization_on_outlined),
+                        border: const OutlineInputBorder(),
                       ),
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -211,7 +240,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                       items: accountState.accounts.map((acc) {
                         return DropdownMenuItem<int>(
                           value: acc.id,
-                          child: Text('${acc.name} (Bal: Rs. ${acc.balance.toStringAsFixed(2)})'),
+                          child: Text('${acc.name} (Bal: $currencySymbol ${acc.balance.toStringAsFixed(2)})'),
                         );
                       }).toList(),
                       onChanged: (value) {
@@ -312,39 +341,115 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {
                                 final txAmount = double.parse(_amountController.text.trim());
+                                final isEditing = widget.editTransactionId != null && _originalTransaction != null;
 
-                                final newTx = Transaction(
-                                  id: 0, // Auto-incremented
-                                  accountId: _selectedAccountId!,
-                                  categoryId: _selectedCategoryId!,
-                                  amount: txAmount,
-                                  type: _selectedType,
-                                  date: _selectedDate,
-                                  description: _descriptionController.text.trim(),
-                                );
+                                if (isEditing) {
+                                  final origTx = _originalTransaction!;
+                                  final origAccId = origTx.accountId;
+                                  final origAmount = origTx.amount;
+                                  final origType = origTx.type;
 
-                                // Add the transaction
-                                ref.read(transactionProvider.notifier).addTransaction(newTx);
+                                  final origAccount = accountState.accounts.firstWhere(
+                                    (a) => a.id == origAccId,
+                                    orElse: () => const Account(id: 0, name: '', balance: 0, type: ''),
+                                  );
 
-                                // Subtract or add balance from corresponding account
-                                final accountToUpdate = accountState.accounts.firstWhere((a) => a.id == newTx.accountId);
-                                final updatedBalance = newTx.type.toLowerCase() == 'income'
-                                    ? accountToUpdate.balance + txAmount
-                                    : accountToUpdate.balance - txAmount;
+                                  final selectedAccount = accountState.accounts.firstWhere((a) => a.id == _selectedAccountId);
 
-                                final updatedAccount = Account(
-                                  id: accountToUpdate.id,
-                                  name: accountToUpdate.name,
-                                  balance: updatedBalance,
-                                  type: accountToUpdate.type,
-                                );
-                                ref.read(accountProvider.notifier).updateAccount(updatedAccount);
+                                  if (origAccId == _selectedAccountId) {
+                                    // Same account
+                                    final intermediateBalance = origType.toLowerCase() == 'income'
+                                        ? origAccount.balance - origAmount
+                                        : origAccount.balance + origAmount;
+                                    final finalBalance = _selectedType.toLowerCase() == 'income'
+                                        ? intermediateBalance + txAmount
+                                        : intermediateBalance - txAmount;
+
+                                    ref.read(accountProvider.notifier).updateAccount(
+                                      Account(
+                                        id: selectedAccount.id,
+                                        name: selectedAccount.name,
+                                        balance: finalBalance,
+                                        type: selectedAccount.type,
+                                      ),
+                                    );
+                                  } else {
+                                    // Different accounts
+                                    if (origAccount.id > 0) {
+                                      final revertedBalance = origType.toLowerCase() == 'income'
+                                          ? origAccount.balance - origAmount
+                                          : origAccount.balance + origAmount;
+                                      ref.read(accountProvider.notifier).updateAccount(
+                                        Account(
+                                          id: origAccount.id,
+                                          name: origAccount.name,
+                                          balance: revertedBalance,
+                                          type: origAccount.type,
+                                        ),
+                                      );
+                                    }
+
+                                    final finalBalance = _selectedType.toLowerCase() == 'income'
+                                        ? selectedAccount.balance + txAmount
+                                        : selectedAccount.balance - txAmount;
+                                    ref.read(accountProvider.notifier).updateAccount(
+                                      Account(
+                                        id: selectedAccount.id,
+                                        name: selectedAccount.name,
+                                        balance: finalBalance,
+                                        type: selectedAccount.type,
+                                      ),
+                                    );
+                                  }
+
+                                  final updatedTx = Transaction(
+                                    id: origTx.id,
+                                    accountId: _selectedAccountId!,
+                                    categoryId: _selectedCategoryId!,
+                                    amount: txAmount,
+                                    type: _selectedType,
+                                    date: _selectedDate,
+                                    description: _descriptionController.text.trim(),
+                                  );
+                                  ref.read(transactionProvider.notifier).editTransaction(updatedTx);
+                                } else {
+                                  // Create new transaction
+                                  final newTx = Transaction(
+                                    id: 0,
+                                    accountId: _selectedAccountId!,
+                                    categoryId: _selectedCategoryId!,
+                                    amount: txAmount,
+                                    type: _selectedType,
+                                    date: _selectedDate,
+                                    description: _descriptionController.text.trim(),
+                                  );
+
+                                  ref.read(transactionProvider.notifier).addTransaction(newTx);
+
+                                  final accountToUpdate = accountState.accounts.firstWhere((a) => a.id == newTx.accountId);
+                                  final updatedBalance = newTx.type.toLowerCase() == 'income'
+                                      ? accountToUpdate.balance + txAmount
+                                      : accountToUpdate.balance - txAmount;
+
+                                  ref.read(accountProvider.notifier).updateAccount(
+                                    Account(
+                                      id: accountToUpdate.id,
+                                      name: accountToUpdate.name,
+                                      balance: updatedBalance,
+                                      type: accountToUpdate.type,
+                                    ),
+                                  );
+                                }
 
                                 context.go('/transactions');
 
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('✅ Transaction Saved Successfully'),
+                                  SnackBar(
+                                    content: Text(
+                                      isEditing 
+                                          ? '✅ Transaction Updated Successfully' 
+                                          : '✅ Transaction Saved Successfully'
+                                    ),
                                     backgroundColor: Colors.green,
                                   ),
                                 );
@@ -355,7 +460,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                             ),
-                            child: const Text('Save Transaction'),
+                            child: Text(widget.editTransactionId != null ? 'Update Transaction' : 'Save Transaction'),
                           ),
                         ),
                       ],

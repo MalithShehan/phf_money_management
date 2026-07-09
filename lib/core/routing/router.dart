@@ -6,6 +6,7 @@ import '../../features/accounts/presentation/screens/accounts_screen.dart';
 import '../../features/categories/presentation/screens/categories_screen.dart';
 import '../../features/transactions/presentation/screens/transactions_screen.dart';
 import '../../features/transactions/presentation/screens/add_transaction_screen.dart';
+import '../../features/budgets/presentation/screens/budgets_screen.dart';
 import '../../features/reports/presentation/screens/reports_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 
@@ -55,6 +56,18 @@ final router = GoRouter(
     GoRoute(
       path: '/add-transaction',
       pageBuilder: (context, state) => _customTransition(const AddTransactionScreen(), state),
+    ),
+    GoRoute(
+      path: '/edit-transaction/:id',
+      pageBuilder: (context, state) {
+        final idStr = state.pathParameters['id'];
+        final id = idStr != null ? int.tryParse(idStr) : null;
+        return _customTransition(AddTransactionScreen(editTransactionId: id), state);
+      },
+    ),
+    GoRoute(
+      path: '/budgets',
+      pageBuilder: (context, state) => _customTransition(const BudgetsScreen(), state),
     ),
     GoRoute(
       path: '/reports',

@@ -10,4 +10,13 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   int get schemaVersion => 1;
+
+  Future<void> resetDatabase() async {
+    await transaction(() async {
+      await delete(transactions).go();
+      await delete(budgets).go();
+      await delete(accounts).go();
+      await delete(categories).go();
+    });
+  }
 }

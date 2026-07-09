@@ -2,17 +2,23 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/usecases/create_category.dart';
+import '../../domain/usecases/delete_category.dart';
+import '../../domain/usecases/update_category.dart';
 import '../../domain/usecases/watch_categories.dart';
 import 'category_state.dart';
 
 class CategoryNotifier extends Notifier<CategoryState> {
   late final CreateCategory _createCategory;
+  late final DeleteCategory _deleteCategory;
+  late final UpdateCategory _updateCategory;
   late final WatchCategories _watchCategories;
   StreamSubscription<List<Category>>? _subscription;
 
   @override
   CategoryState build() {
     _createCategory = ref.watch(createCategoryProvider);
+    _deleteCategory = ref.watch(deleteCategoryProvider);
+    _updateCategory = ref.watch(updateCategoryProvider);
     _watchCategories = ref.watch(watchCategoriesProvider);
 
     _startWatching();
@@ -75,6 +81,24 @@ class CategoryNotifier extends Notifier<CategoryState> {
       await _createCategory(category);
     } catch (e) {
       print('ERROR ADDING CATEGORY: $e');
+      state = state.copyWith(errorMessage: e.toString());
+    }
+  }
+
+  Future<void> editCategory(Category category) async {
+    try {
+      await _updateCategory(category);
+    } catch (e) {
+      print('ERROR EDITING CATEGORY: $e');
+      state = state.copyWith(errorMessage: e.toString());
+    }
+  }
+
+  Future<void> deleteCategory(int id) async {
+    try {
+      await _deleteCategory(id);
+    } catch (e) {
+      print('ERROR DELETING CATEGORY: $e');
       state = state.copyWith(errorMessage: e.toString());
     }
   }

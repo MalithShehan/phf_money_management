@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/account.dart';
 import '../../domain/usecases/create_account.dart';
 import '../../domain/usecases/update_account.dart';
+import '../../domain/usecases/delete_account.dart';
 import '../../domain/usecases/watch_accounts.dart';
 import 'account_state.dart';
 
 class AccountNotifier extends Notifier<AccountState> {
   late final CreateAccount _createAccount;
   late final UpdateAccount _updateAccount;
+  late final DeleteAccount _deleteAccount;
   late final WatchAccounts _watchAccounts;
   StreamSubscription<List<Account>>? _subscription;
 
@@ -16,6 +18,7 @@ class AccountNotifier extends Notifier<AccountState> {
   AccountState build() {
     _createAccount = ref.watch(createAccountProvider);
     _updateAccount = ref.watch(updateAccountProvider);
+    _deleteAccount = ref.watch(deleteAccountProvider);
     _watchAccounts = ref.watch(watchAccountsProvider);
 
     _startWatching();
@@ -62,4 +65,14 @@ class AccountNotifier extends Notifier<AccountState> {
       state = state.copyWith(errorMessage: e.toString());
     }
   }
+
+  Future<void> deleteAccount(int id) async {
+    try {
+      await _deleteAccount(id);
+    } catch (e) {
+      print('ERROR DELETING ACCOUNT: $e');
+      state = state.copyWith(errorMessage: e.toString());
+    }
+  }
 }
+

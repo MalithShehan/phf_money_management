@@ -7,6 +7,10 @@ import 'package:phf_money_management/features/categories/domain/entities/categor
 import 'package:phf_money_management/features/categories/presentation/providers/category_provider.dart';
 import 'package:phf_money_management/features/transactions/domain/entities/transaction.dart';
 import 'package:phf_money_management/features/transactions/presentation/providers/transaction_provider.dart';
+import 'package:phf_money_management/features/settings/presentation/providers/currency_provider.dart';
+import 'package:phf_money_management/features/settings/data/local/database_provider.dart';
+import 'package:flutter/services.dart';
+import 'dart:convert';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -106,8 +110,129 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
+  Future<void> _exportToJSON(BuildContext context, WidgetRef ref) async {
+    final accounts = ref.read(accountProvider).accounts;
+    final categories = ref.read(categoryProvider).categories;
+    final transactions = ref.read(transactionProvider).transactions;
+
+    final data = {
+      'accounts': accounts.map((a) => {'id': a.id, 'name': a.name, 'balance': a.balance, 'type': a.type}).toList(),
+      'categories': categories.map((c) => {'id': c.id, 'name': c.name, 'type': c.type, 'icon': c.icon, 'color': c.color}).toList(),
+      'transactions': transactions.map((t) => {
+        'id': t.id,
+        'accountId': t.accountId,
+        'categoryId': t.categoryId,
+        'amount': t.amount,
+        'type': t.type,
+        'date': t.date.toIso8601String(),
+        'description': t.description,
+      }).toList(),
+    };
+
+    final jsonString = const JsonEncoder.withIndent('  ').convert(data);
+    await Clipboard.setData(ClipboardData(text: jsonString));
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('📋 JSON data copied to clipboard!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
+  Future<void> _exportToCSV(BuildContext context, WidgetRef ref) async {
+    final transactions = ref.read(transactionProvider).transactions;
+    final accounts = ref.read(accountProvider).accounts;
+    final categories = ref.read(categoryProvider).categories;
+
+    final buffer = StringBuffer();
+    buffer.writeln('ID,Date,Type,Amount,Category,Account,Description');
+
+    for (final tx in transactions) {
+      final acc = accounts.firstWhere((a) => a.id == tx.accountId, orElse: () => const Account(id: 0, name: 'Unknown', balance: 0, type: ''));
+      final cat = categories.firstWhere((c) => c.id == tx.categoryId, orElse: () => const Category(id: 0, name: 'Unknown', type: ''));
+      
+      final dateStr = tx.date.toIso8601String().split('T')[0];
+      final description = (tx.description ?? '').replaceAll('"', '""');
+
+      buffer.writeln('${tx.id},$dateStr,${tx.type},${tx.amount},"${cat.name}","${acc.name}","$description"');
+    }
+
+    await Clipboard.setData(ClipboardData(text: buffer.toString()));
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('📋 CSV data copied to clipboard!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
+  void _showResetConfirmation(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('Reset Local Data?', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text(
+          'Are you sure you want to reset all local data? '
+          'This action will permanently delete all accounts, transactions, categories, and budgets.',
+          style: TextStyle(color: Color(0xFF64748B)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(),
+            child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B))),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                await ref.read(databaseProvider).resetDatabase();
+                
+                // Invalidate providers to force reload of UI
+                ref.invalidate(accountProvider);
+                ref.invalidate(categoryProvider);
+                ref.invalidate(transactionProvider);
+
+                if (context.mounted) {
+                  Navigator.of(dialogCtx).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('✅ All local database tables have been reset.'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  Navigator.of(dialogCtx).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('❌ Error resetting database: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD32F2F),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Reset Everything'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final currentCurrency = ref.watch(currencyProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('App Settings'),
@@ -118,6 +243,54 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          const Text(
+            'General Settings',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF0D47A1),
+            ),
+          ),
+          const SizedBox(height: 8),
+          
+          Card(
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.monetization_on_outlined, color: Color(0xFF1976D2)),
+                      SizedBox(width: 12),
+                      Text(
+                        'Preferred Currency',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  DropdownButton<String>(
+                    value: currentCurrency,
+                    items: const [
+                      DropdownMenuItem(value: 'Rs.', child: Text('Rs. (LKR)')),
+                      DropdownMenuItem(value: '\$', child: Text('\$ (USD)')),
+                      DropdownMenuItem(value: '€', child: Text('€ (EUR)')),
+                      DropdownMenuItem(value: '£', child: Text('£ (GBP)')),
+                      DropdownMenuItem(value: '¥', child: Text('¥ (JPY)')),
+                    ],
+                    onChanged: (newValue) {
+                      if (newValue != null) {
+                        ref.read(currencyProvider.notifier).setCurrency(newValue);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
           const Text(
             'Database & Diagnostics',
             style: TextStyle(
@@ -145,6 +318,101 @@ class SettingsScreen extends ConsumerWidget {
                   'ACTIVE',
                   style: TextStyle(color: Colors.green[800], fontSize: 10, fontWeight: FontWeight.bold),
                 ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Reset Database Action Card
+          Card(
+            elevation: 2,
+            child: ListTile(
+              leading: const Icon(Icons.delete_forever_rounded, color: Colors.red),
+              title: const Text(
+                'Reset Local Data',
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+              ),
+              subtitle: const Text('Deletes all local accounts, transactions, categories, and budgets.'),
+              onTap: () => _showResetConfirmation(context, ref),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          const Text(
+            'Data Portability',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF0D47A1),
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          Card(
+            elevation: 2,
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.code_rounded, color: Color(0xFF1976D2)),
+                  title: const Text('Export as JSON', style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: const Text('Copies all financial tables formatted as a JSON string.'),
+                  trailing: const Icon(Icons.copy_all_rounded, size: 20),
+                  onTap: () => _exportToJSON(context, ref),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.table_chart_rounded, color: Color(0xFF1976D2)),
+                  title: const Text('Export Transactions as CSV', style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: const Text('Copies transaction logs formatted as a comma-separated values table.'),
+                  trailing: const Icon(Icons.copy_all_rounded, size: 20),
+                  onTap: () => _exportToCSV(context, ref),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          const Text(
+            'About PHF ITCore',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF0D47A1),
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          Card(
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1976D2).withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.volunteer_activism_rounded, color: Color(0xFF1976D2)),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Pure Heart Family (PHF)',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Developed by PHF ITCore as an offline-first personal money management solution. '
+                    'Built under Clean Architecture patterns with local SQLite database powered by Drift.',
+                    style: TextStyle(color: Colors.black54, fontSize: 13, height: 1.4),
+                  ),
+                ],
               ),
             ),
           ),

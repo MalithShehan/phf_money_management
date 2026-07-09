@@ -33,6 +33,44 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     final hex = hexString.replaceAll('#', '');
     return Color(int.parse('FF$hex', radix: 16));
   }
+
+  void _showDeleteConfirmationDialog(BuildContext context, Category category) {
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('Delete Category?', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Text(
+          'Are you sure you want to delete "${category.name}"? '
+          'This will permanently delete all transactions associated with this category.',
+          style: const TextStyle(color: Color(0xFF64748B)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(),
+            child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B))),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              ref.read(categoryProvider.notifier).deleteCategory(category.id);
+              Navigator.of(dialogCtx).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Category "${category.name}" deleted.'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD32F2F),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final categoryState = ref.watch(categoryProvider);
@@ -108,13 +146,54 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        trailing: Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: displayColor,
-                            shape: BoxShape.circle,
-                          ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: displayColor,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            PopupMenuButton<String>(
+                              icon: const Icon(Icons.more_vert_rounded),
+                              onSelected: (value) {
+                                if (value == 'edit') {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AddCategoryDialog(category: cat),
+                                  );
+                                } else if (value == 'delete') {
+                                  _showDeleteConfirmationDialog(context, cat);
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  value: 'edit',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.edit_rounded, size: 18),
+                                      SizedBox(width: 8),
+                                      Text('Edit'),
+                                    ],
+                                  ),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'delete',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.delete_rounded, color: Colors.red, size: 18),
+                                      SizedBox(width: 8),
+                                      Text('Delete', style: TextStyle(color: Colors.red)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     );
@@ -135,7 +214,8 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
 }
 
 class AddCategoryDialog extends ConsumerStatefulWidget {
-  const AddCategoryDialog({super.key});
+  final Category? category;
+  const AddCategoryDialog({super.key, this.category});
 
   @override
   ConsumerState<AddCategoryDialog> createState() => _AddCategoryDialogState();
@@ -167,7 +247,6 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
     {'name': 'Entertainment', 'icon': Icons.movie_rounded, 'id': 'entertainment'},
   ];
 
-
   Color _hexToColor(String? hexString) {
     if (hexString == null) return const Color(0xFF1976D2);
     final hex = hexString.replaceAll('#', '');
@@ -177,7 +256,12 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController();
+    _nameController = TextEditingController(text: widget.category?.name);
+    if (widget.category != null) {
+      _selectedType = widget.category!.type;
+      _selectedColor = widget.category!.color ?? '#1976D2';
+      _selectedIcon = widget.category!.icon ?? 'category';
+    }
   }
 
   @override
@@ -188,8 +272,9 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isEditing = widget.category != null;
     return AlertDialog(
-      title: const Text('Add New Category'),
+      title: Text(isEditing ? 'Edit Category' : 'Add New Category'),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -208,7 +293,7 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                initialValue: _selectedType,
+                value: _selectedType,
                 decoration: const InputDecoration(labelText: 'Category Type'),
                 items: const [
                   DropdownMenuItem(value: 'Income', child: Text('Income')),
@@ -224,7 +309,7 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                initialValue: _selectedColor,
+                value: _selectedColor,
                 decoration: const InputDecoration(labelText: 'Display Color'),
                 items: _colorOptions.map((opt) {
                   return DropdownMenuItem<String>(
@@ -255,7 +340,7 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                initialValue: _selectedIcon,
+                value: _selectedIcon,
                 decoration: const InputDecoration(labelText: 'Category Icon'),
                 items: _iconOptions.map<DropdownMenuItem<String>>((opt) {
                   return DropdownMenuItem<String>(
@@ -292,19 +377,29 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
           onPressed: () {
             if (_formKey.currentState!.validate()) {
               final newCategory = Category(
-                id: 0,
+                id: isEditing ? widget.category!.id : 0,
                 name: _nameController.text.trim(),
                 type: _selectedType,
                 icon: _selectedIcon,
                 color: _selectedColor,
               );
 
-              ref.read(categoryProvider.notifier).addCategory(newCategory);
+              if (isEditing) {
+                ref.read(categoryProvider.notifier).editCategory(newCategory);
+              } else {
+                ref.read(categoryProvider.notifier).addCategory(newCategory);
+              }
 
               Navigator.of(context).pop();
 
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Category "${newCategory.name}" created successfully!')),
+                SnackBar(
+                  content: Text(
+                    isEditing 
+                        ? 'Category "${newCategory.name}" updated successfully!'
+                        : 'Category "${newCategory.name}" created successfully!'
+                  ),
+                ),
               );
             }
           },
@@ -312,7 +407,7 @@ class _AddCategoryDialogState extends ConsumerState<AddCategoryDialog> {
             backgroundColor: const Color(0xFF1976D2),
             foregroundColor: Colors.white,
           ),
-          child: const Text('Save'),
+          child: Text(isEditing ? 'Save' : 'Add'),
         ),
       ],
     );

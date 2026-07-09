@@ -11,6 +11,7 @@ import 'package:phf_money_management/features/categories/domain/entities/categor
 import 'package:phf_money_management/features/categories/presentation/providers/category_provider.dart';
 import 'package:phf_money_management/features/transactions/domain/entities/transaction.dart';
 import 'package:phf_money_management/features/transactions/presentation/providers/transaction_provider.dart';
+import 'package:phf_money_management/features/settings/presentation/providers/currency_provider.dart';
 
 String _getGreeting() {
   final hour = DateTime.now().hour;
@@ -117,7 +118,8 @@ class DashboardScreen extends ConsumerWidget {
         ? sortedTransactions.sublist(0, 5)
         : sortedTransactions;
 
-    final currencyFormat = NumberFormat.currency(symbol: 'Rs. ', decimalDigits: 2);
+    final currencySymbol = ref.watch(currencyProvider);
+    final currencyFormat = NumberFormat.currency(symbol: '$currencySymbol ', decimalDigits: 2);
 
     // Check budget warnings
     final budgetWarnings = <String>[];
