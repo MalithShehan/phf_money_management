@@ -11,6 +11,7 @@ class MyApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'PHF Money Management',
       debugShowCheckedModeBanner: false,
+      themeMode: ThemeMode.light,
       theme: ThemeData(
         useMaterial3: true,
         scaffoldBackgroundColor: const Color(0xFFF7F9FC),
