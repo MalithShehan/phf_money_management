@@ -12,12 +12,6 @@ class CategoriesScreen extends ConsumerStatefulWidget {
 }
 
 class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  String _selectedType = 'Expense';
-  String _selectedColor = '#1976D2'; // Default Blue color hex
-  String _selectedIcon = 'category';
-
   final List<Map<String, String>> _colorOptions = const [
     {'name': 'Blue', 'hex': '#1976D2'},
     {'name': 'Emerald', 'hex': '#2E7D32'},
@@ -37,12 +31,6 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     {'name': 'Entertainment', 'icon': Icons.movie_rounded, 'id': 'entertainment'},
   ];
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
-  }
-
   IconData _getIconData(String? iconId) {
     final match = _iconOptions.firstWhere((element) => element['id'] == iconId, orElse: () => _iconOptions.first);
     return match['icon'] as IconData;
@@ -55,21 +43,27 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   }
 
   void _showAddCategoryDialog(BuildContext context) {
+    final formKey = GlobalKey<FormState>();
+    final nameController = TextEditingController();
+    String localSelectedType = 'Expense';
+    String localSelectedColor = '#1976D2'; // Default Blue color hex
+    String localSelectedIcon = 'category';
+
     showDialog(
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
-          builder: (stContext, setState) {
+          builder: (stContext, setDialogState) {
             return AlertDialog(
               title: const Text('Add New Category'),
               content: Form(
-                key: _formKey,
+                key: formKey,
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       TextFormField(
-                        controller: _nameController,
+                        controller: nameController,
                         decoration: const InputDecoration(labelText: 'Category Name'),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
@@ -80,7 +74,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
-                        value: _selectedType,
+                        value: localSelectedType,
                         decoration: const InputDecoration(labelText: 'Category Type'),
                         items: const [
                           DropdownMenuItem(value: 'Income', child: Text('Income')),
@@ -88,15 +82,15 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                         ],
                         onChanged: (value) {
                           if (value != null) {
-                            setState(() {
-                              _selectedType = value;
+                            setDialogState(() {
+                              localSelectedType = value;
                             });
                           }
                         },
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
-                        value: _selectedColor,
+                        value: localSelectedColor,
                         decoration: const InputDecoration(labelText: 'Display Color'),
                         items: _colorOptions.map((opt) {
                           return DropdownMenuItem<String>(
@@ -119,15 +113,15 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                         }).toList(),
                         onChanged: (value) {
                           if (value != null) {
-                            setState(() {
-                              _selectedColor = value;
+                            setDialogState(() {
+                              localSelectedColor = value;
                             });
                           }
                         },
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
-                        value: _selectedIcon,
+                        value: localSelectedIcon,
                         decoration: const InputDecoration(labelText: 'Category Icon'),
                         items: _iconOptions.map<DropdownMenuItem<String>>((opt) {
                           return DropdownMenuItem<String>(
@@ -143,8 +137,8 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                         }).toList(),
                         onChanged: (value) {
                           if (value != null) {
-                            setState(() {
-                              _selectedIcon = value;
+                            setDialogState(() {
+                              localSelectedIcon = value;
                             });
                           }
                         },
@@ -156,25 +150,25 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    _nameController.clear();
+                    nameController.dispose();
                     Navigator.of(dialogContext).pop();
                   },
                   child: const Text('Cancel'),
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    if (_formKey.currentState!.validate()) {
+                    if (formKey.currentState!.validate()) {
                       final newCategory = Category(
                         id: 0,
-                        name: _nameController.text.trim(),
-                        type: _selectedType,
-                        icon: _selectedIcon,
-                        color: _selectedColor,
+                        name: nameController.text.trim(),
+                        type: localSelectedType,
+                        icon: localSelectedIcon,
+                        color: localSelectedColor,
                       );
 
                       ref.read(categoryProvider.notifier).addCategory(newCategory);
 
-                      _nameController.clear();
+                      nameController.dispose();
                       Navigator.of(dialogContext).pop();
 
                       ScaffoldMessenger.of(context).showSnackBar(
