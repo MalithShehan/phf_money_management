@@ -21,11 +21,10 @@ class AccountNotifier extends Notifier<AccountState> {
       _subscription?.cancel();
     });
 
-    return const AccountState();
+    return const AccountState(isLoading: true);
   }
 
   void _startWatching() {
-    state = state.copyWith(isLoading: true);
     _subscription?.cancel();
     _subscription = _watchAccounts().listen(
       (accounts) {

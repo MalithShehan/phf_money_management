@@ -27,11 +27,10 @@ class TransactionNotifier extends Notifier<TransactionState> {
       _subscription?.cancel();
     });
 
-    return const TransactionState();
+    return const TransactionState(isLoading: true);
   }
 
   void _startWatching() {
-    state = state.copyWith(isLoading: true);
     _subscription?.cancel();
     _subscription = _watchTransactions().listen(
       (transactions) {

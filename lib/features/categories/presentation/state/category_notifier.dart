@@ -21,11 +21,10 @@ class CategoryNotifier extends Notifier<CategoryState> {
       _subscription?.cancel();
     });
 
-    return const CategoryState();
+    return const CategoryState(isLoading: true);
   }
 
   void _startWatching() {
-    state = state.copyWith(isLoading: true);
     _subscription?.cancel();
     _subscription = _watchCategories().listen(
       (categories) {

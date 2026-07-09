@@ -21,11 +21,10 @@ class BudgetNotifier extends Notifier<BudgetState> {
       _subscription?.cancel();
     });
 
-    return const BudgetState();
+    return const BudgetState(isLoading: true);
   }
 
   void _startWatching() {
-    state = state.copyWith(isLoading: true);
     _subscription?.cancel();
     _subscription = _watchBudgets().listen(
       (budgets) {
