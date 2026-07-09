@@ -10,14 +10,14 @@ import '../../domain/entities/budget.dart';
 import '../providers/budget_provider.dart';
 import 'package:phf_money_management/features/budgets/domain/usecases/get_budget_progress.dart';
 
-class BudgetsScreen extends ConsumerStatefulWidget {
-  const BudgetsScreen({super.key});
+class BudgetsPage extends ConsumerStatefulWidget {
+  const BudgetsPage({super.key});
 
   @override
-  ConsumerState<BudgetsScreen> createState() => _BudgetsScreenState();
+  ConsumerState<BudgetsPage> createState() => _BudgetsPageState();
 }
 
-class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
+class _BudgetsPageState extends ConsumerState<BudgetsPage> {
   DateTime _selectedMonth = DateTime.now();
 
   void _changeMonth(int offset) {

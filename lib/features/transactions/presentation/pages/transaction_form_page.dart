@@ -9,15 +9,15 @@ import 'package:phf_money_management/features/transactions/domain/entities/trans
 import 'package:phf_money_management/features/transactions/presentation/providers/transaction_provider.dart';
 import 'package:phf_money_management/features/settings/presentation/providers/currency_provider.dart';
 
-class AddTransactionScreen extends ConsumerStatefulWidget {
+class TransactionFormPage extends ConsumerStatefulWidget {
   final int? editTransactionId;
-  const AddTransactionScreen({super.key, this.editTransactionId});
+  const TransactionFormPage({super.key, this.editTransactionId});
 
   @override
-  ConsumerState<AddTransactionScreen> createState() => _AddTransactionScreenState();
+  ConsumerState<TransactionFormPage> createState() => _TransactionFormPageState();
 }
 
-class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
+class _TransactionFormPageState extends ConsumerState<TransactionFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _descriptionController = TextEditingController();

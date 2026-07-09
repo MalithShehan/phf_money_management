@@ -8,12 +8,12 @@ import 'package:phf_money_management/features/categories/presentation/providers/
 import 'package:phf_money_management/features/transactions/domain/entities/transaction.dart';
 import 'package:phf_money_management/features/transactions/presentation/providers/transaction_provider.dart';
 import 'package:phf_money_management/features/settings/presentation/providers/currency_provider.dart';
-import 'package:phf_money_management/features/settings/data/local/database_provider.dart';
+import 'package:phf_money_management/data/local/database_provider.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
 
-class SettingsScreen extends ConsumerWidget {
-  const SettingsScreen({super.key});
+class SettingsPage extends ConsumerWidget {
+  const SettingsPage({super.key});
 
   Future<void> _generateSampleData(BuildContext context, WidgetRef ref) async {
     // 1. Generate Categories

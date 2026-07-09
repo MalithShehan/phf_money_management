@@ -6,14 +6,14 @@ import 'package:phf_money_management/features/accounts/domain/entities/account.d
 import 'package:phf_money_management/features/accounts/presentation/providers/account_provider.dart';
 import 'package:phf_money_management/features/settings/presentation/providers/currency_provider.dart';
 
-class AccountsScreen extends ConsumerStatefulWidget {
-  const AccountsScreen({super.key});
+class AccountsPage extends ConsumerStatefulWidget {
+  const AccountsPage({super.key});
 
   @override
-  ConsumerState<AccountsScreen> createState() => _AccountsScreenState();
+  ConsumerState<AccountsPage> createState() => _AccountsPageState();
 }
 
-class _AccountsScreenState extends ConsumerState<AccountsScreen> {
+class _AccountsPageState extends ConsumerState<AccountsPage> {
   void _showDeleteConfirmationDialog(BuildContext context, Account account) {
     showDialog(
       context: context,

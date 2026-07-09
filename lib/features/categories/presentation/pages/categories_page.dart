@@ -4,14 +4,14 @@ import 'package:phf_money_management/core/widgets/app_drawer.dart';
 import 'package:phf_money_management/features/categories/domain/entities/category.dart';
 import 'package:phf_money_management/features/categories/presentation/providers/category_provider.dart';
 
-class CategoriesScreen extends ConsumerStatefulWidget {
-  const CategoriesScreen({super.key});
+class CategoriesPage extends ConsumerStatefulWidget {
+  const CategoriesPage({super.key});
 
   @override
-  ConsumerState<CategoriesScreen> createState() => _CategoriesScreenState();
+  ConsumerState<CategoriesPage> createState() => _CategoriesPageState();
 }
 
-class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
+class _CategoriesPageState extends ConsumerState<CategoriesPage> {
 
   final List<Map<String, dynamic>> _iconOptions = const [
     {'name': 'General', 'icon': Icons.category_rounded, 'id': 'category'},

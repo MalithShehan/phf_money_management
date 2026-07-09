@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:phf_money_management/features/settings/data/local/app_database.dart' as db;
-import 'package:phf_money_management/features/settings/data/local/database_provider.dart';
+import 'package:phf_money_management/data/local/app_database.dart' as db;
+import 'package:phf_money_management/data/local/database_provider.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/repositories/category_repository.dart';
 

@@ -9,8 +9,8 @@ import 'package:phf_money_management/features/transactions/presentation/provider
 import 'package:phf_money_management/features/settings/presentation/providers/currency_provider.dart';
 import 'package:phf_money_management/features/reports/domain/usecases/get_category_expense_breakdown.dart';
 
-class ReportsScreen extends ConsumerWidget {
-  const ReportsScreen({super.key});
+class ReportsPage extends ConsumerWidget {
+  const ReportsPage({super.key});
 
   Color _hexToColor(String? hexString) {
     if (hexString == null) return const Color(0xFF1976D2);

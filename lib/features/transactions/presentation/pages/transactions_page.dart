@@ -11,14 +11,14 @@ import 'package:phf_money_management/features/categories/domain/entities/categor
 import 'package:phf_money_management/features/categories/presentation/providers/category_provider.dart';
 import 'package:phf_money_management/features/transactions/presentation/providers/transaction_provider.dart';
 
-class TransactionsScreen extends ConsumerStatefulWidget {
-  const TransactionsScreen({super.key});
+class TransactionsPage extends ConsumerStatefulWidget {
+  const TransactionsPage({super.key});
 
   @override
-  ConsumerState<TransactionsScreen> createState() => _TransactionsScreenState();
+  ConsumerState<TransactionsPage> createState() => _TransactionsPageState();
 }
 
-class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
+class _TransactionsPageState extends ConsumerState<TransactionsPage> {
   final _searchController = TextEditingController();
   String _selectedFilter = 'All';
 

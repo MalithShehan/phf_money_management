@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../features/dashboard/presentation/screens/splash_screen.dart';
-import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
-import '../../features/accounts/presentation/screens/accounts_screen.dart';
-import '../../features/categories/presentation/screens/categories_screen.dart';
-import '../../features/transactions/presentation/screens/transactions_screen.dart';
-import '../../features/transactions/presentation/screens/add_transaction_screen.dart';
-import '../../features/budgets/presentation/screens/budgets_screen.dart';
-import '../../features/reports/presentation/screens/reports_screen.dart';
-import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/dashboard/presentation/pages/splash_page.dart';
+import '../../features/dashboard/presentation/pages/dashboard_page.dart';
+import '../../features/accounts/presentation/pages/accounts_page.dart';
+import '../../features/categories/presentation/pages/categories_page.dart';
+import '../../features/transactions/presentation/pages/transactions_page.dart';
+import '../../features/transactions/presentation/pages/transaction_form_page.dart';
+import '../../features/budgets/presentation/pages/budgets_page.dart';
+import '../../features/reports/presentation/pages/reports_page.dart';
+import '../../features/settings/presentation/pages/settings_page.dart';
 
 CustomTransitionPage<void> _customTransition(Widget child, GoRouterState state) {
   return CustomTransitionPage<void>(
@@ -35,47 +35,47 @@ final router = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      pageBuilder: (context, state) => _customTransition(const SplashScreen(), state),
+      pageBuilder: (context, state) => _customTransition(const SplashPage(), state),
     ),
     GoRoute(
       path: '/dashboard',
-      pageBuilder: (context, state) => _customTransition(const DashboardScreen(), state),
+      pageBuilder: (context, state) => _customTransition(const DashboardPage(), state),
     ),
     GoRoute(
       path: '/accounts',
-      pageBuilder: (context, state) => _customTransition(const AccountsScreen(), state),
+      pageBuilder: (context, state) => _customTransition(const AccountsPage(), state),
     ),
     GoRoute(
       path: '/categories',
-      pageBuilder: (context, state) => _customTransition(const CategoriesScreen(), state),
+      pageBuilder: (context, state) => _customTransition(const CategoriesPage(), state),
     ),
     GoRoute(
       path: '/transactions',
-      pageBuilder: (context, state) => _customTransition(const TransactionsScreen(), state),
+      pageBuilder: (context, state) => _customTransition(const TransactionsPage(), state),
     ),
     GoRoute(
       path: '/add-transaction',
-      pageBuilder: (context, state) => _customTransition(const AddTransactionScreen(), state),
+      pageBuilder: (context, state) => _customTransition(const TransactionFormPage(), state),
     ),
     GoRoute(
       path: '/edit-transaction/:id',
       pageBuilder: (context, state) {
         final idStr = state.pathParameters['id'];
         final id = idStr != null ? int.tryParse(idStr) : null;
-        return _customTransition(AddTransactionScreen(editTransactionId: id), state);
+        return _customTransition(TransactionFormPage(editTransactionId: id), state);
       },
     ),
     GoRoute(
       path: '/budgets',
-      pageBuilder: (context, state) => _customTransition(const BudgetsScreen(), state),
+      pageBuilder: (context, state) => _customTransition(const BudgetsPage(), state),
     ),
     GoRoute(
       path: '/reports',
-      pageBuilder: (context, state) => _customTransition(const ReportsScreen(), state),
+      pageBuilder: (context, state) => _customTransition(const ReportsPage(), state),
     ),
     GoRoute(
       path: '/settings',
-      pageBuilder: (context, state) => _customTransition(const SettingsScreen(), state),
+      pageBuilder: (context, state) => _customTransition(const SettingsPage(), state),
     ),
   ],
 );
