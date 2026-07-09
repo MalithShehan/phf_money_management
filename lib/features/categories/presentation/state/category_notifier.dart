@@ -24,14 +24,21 @@ class CategoryNotifier extends Notifier<CategoryState> {
     return const CategoryState(isLoading: true);
   }
 
+  bool _isSeeding = false;
+
   void _startWatching() {
     _subscription?.cancel();
     _subscription = _watchCategories().listen(
       (categories) {
-        state = state.copyWith(
-          categories: categories,
-          isLoading: false,
-        );
+        if (categories.isEmpty && !_isSeeding) {
+          _isSeeding = true;
+          _seedDefaultCategories();
+        } else {
+          state = state.copyWith(
+            categories: categories,
+            isLoading: false,
+          );
+        }
       },
       onError: (error) {
         state = state.copyWith(
@@ -40,6 +47,27 @@ class CategoryNotifier extends Notifier<CategoryState> {
         );
       },
     );
+  }
+
+  Future<void> _seedDefaultCategories() async {
+    try {
+      final defaults = [
+        Category(id: 0, name: 'Salary', type: 'Income', icon: 'salary', color: '#2E7D32'),
+        Category(id: 0, name: 'Food', type: 'Expense', icon: 'restaurant', color: '#EF6C00'),
+        Category(id: 0, name: 'Transport', type: 'Expense', icon: 'car', color: '#1976D2'),
+        Category(id: 0, name: 'Shopping', type: 'Expense', icon: 'shopping', color: '#6A1B9A'),
+        Category(id: 0, name: 'Entertainment', type: 'Expense', icon: 'entertainment', color: '#C62828'),
+        Category(id: 0, name: 'Home/Rent', type: 'Expense', icon: 'home', color: '#00796B'),
+      ];
+
+      for (final cat in defaults) {
+        await _createCategory(cat);
+      }
+    } catch (e) {
+      print('ERROR SEEDING CATEGORIES: $e');
+    } finally {
+      _isSeeding = false;
+    }
   }
 
   Future<void> addCategory(Category category) async {

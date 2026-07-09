@@ -98,10 +98,27 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                       style: TextStyle(color: Colors.black54),
                     ),
                     const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: () => context.go('/accounts'),
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1976D2), foregroundColor: Colors.white),
-                      child: const Text('Go to Accounts'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () => context.go('/accounts'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1976D2),
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Go to Accounts'),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          onPressed: () => context.go('/categories'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1976D2),
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Go to Categories'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
