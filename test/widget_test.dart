@@ -12,6 +12,6 @@ void main() {
     );
 
     // Verify that the landing splash text is present.
-    expect(find.text('PHF MONEY'), findsOneWidget);
+    expect(find.text('PHF'), findsOneWidget);
   });
 }
