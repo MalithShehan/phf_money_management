@@ -25,12 +25,21 @@ class TransactionsScreen extends ConsumerWidget {
         context: ctx,
         builder: (dialogCtx) {
           return AlertDialog(
-            title: const Text('Delete Transaction'),
-            content: Text('Are you sure you want to delete the transaction "$description"?'),
+            title: const Text(
+              'Delete Transaction?',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: const Text(
+              'This action cannot be undone.',
+              style: TextStyle(color: Color(0xFF64748B)),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogCtx).pop(),
-                child: const Text('Cancel'),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.bold),
+                ),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -65,7 +74,13 @@ class TransactionsScreen extends ConsumerWidget {
                     ),
                   );
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red[800], foregroundColor: Colors.white),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFD32F2F),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
                 child: const Text('Delete'),
               ),
             ],
