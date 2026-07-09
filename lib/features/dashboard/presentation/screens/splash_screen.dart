@@ -8,23 +8,24 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
+class _SplashScreenState extends State<SplashScreen> {
+  double _opacity = 0.0;
+  double _scale = 0.8;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
-    );
+    // Trigger the animation shortly after mount
+    Future.microtask(() {
+      if (mounted) {
+        setState(() {
+          _opacity = 1.0;
+          _scale = 1.0;
+        });
+      }
+    });
 
-    _controller.forward();
-
+    // Navigate to dashboard after 2.5 seconds
     Future.delayed(const Duration(milliseconds: 2500), () {
       if (mounted) {
         context.go('/dashboard');
@@ -33,74 +34,105 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF0D47A1), // Deep Blue
-              Color(0xFF1976D2), // Medium Blue
-              Color(0xFF42A5F5), // Light Blue
+              Color(0xFFE3F2FD), // Very light soft blue
+              Color(0xFFBBDEFB), // Light soft blue gradient
             ],
           ),
         ),
         child: Center(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white24,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white30, width: 2),
-                  ),
-                  child: const Icon(
-                    Icons.account_balance_wallet_rounded,
-                    size: 80,
-                    color: Colors.white,
-                  ),
+          child: AnimatedOpacity(
+            opacity: _opacity,
+            duration: const Duration(milliseconds: 1500),
+            curve: Curves.easeInOut,
+            child: AnimatedScale(
+              scale: _scale,
+              duration: const Duration(milliseconds: 1500),
+              curve: Curves.easeOutBack,
+              child: TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0.0, end: 1.0),
+                duration: const Duration(milliseconds: 1800),
+                builder: (context, value, child) {
+                  return Transform.translate(
+                    offset: Offset(0, 30 * (1.0 - value)),
+                    child: child,
+                  );
+                },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Premium Visual Card
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.8),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF1976D2).withOpacity(0.15),
+                            blurRadius: 30,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: const Text(
+                        '💙',
+                        style: TextStyle(
+                          fontSize: 64,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    // Brand Name
+                    const Text(
+                      'PHF',
+                      style: TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF1565C0), // Premium darker blue
+                        letterSpacing: 4,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Money Management',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF546E7A), // Muted grey blue
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    const SizedBox(height: 64),
+                    // Small Loading Indicator with Soft Text
+                    const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1976D2)),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Loading...',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF78909C),
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 24),
-                const Text(
-                  'PHF MONEY',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                    letterSpacing: 2,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Track, Budget & Save Smarter',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white70,
-                    letterSpacing: 1,
-                  ),
-                ),
-                const SizedBox(height: 48),
-                const SizedBox(
-                  width: 32,
-                  height: 32,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
