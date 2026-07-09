@@ -45,6 +45,7 @@ class DashboardScreen extends ConsumerWidget {
 
     // Net balance (Income - Expense)
     final netCashFlow = monthlyIncome - monthlyExpense;
+    final totalIncomeExpense = monthlyIncome + monthlyExpense;
 
     // Get last 5 transactions sorted descending by date
     final sortedTransactions = List<Transaction>.from(transactionState.transactions)
@@ -367,76 +368,83 @@ class DashboardScreen extends ConsumerWidget {
               // 5. Chart (Visual comparison)
               if (monthlyIncome > 0 || monthlyExpense > 0) ...[
                 const Text(
-                  'Monthly Overview',
+                  'Cash Flow Breakdown',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF0D47A1),
                   ),
                 ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  height: 150,
-                  child: BarChart(
-                    BarChartData(
-                      alignment: BarChartAlignment.spaceEvenly,
-                      maxY: (monthlyIncome > monthlyExpense ? monthlyIncome : monthlyExpense) * 1.2,
-                      barGroups: [
-                        BarChartGroupData(
-                          x: 0,
-                          barRods: [
-                            BarChartRodData(
-                              toY: monthlyIncome,
-                              color: Colors.green[700],
-                              width: 25,
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(6),
-                                topRight: Radius.circular(6),
+                const SizedBox(height: 12),
+                Card(
+                  elevation: 1,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 4,
+                          child: SizedBox(
+                            height: 120,
+                            child: PieChart(
+                              PieChartData(
+                                sectionsSpace: 3,
+                                centerSpaceRadius: 25,
+                                sections: [
+                                  PieChartSectionData(
+                                    color: const Color(0xFF2E7D32),
+                                    value: monthlyIncome,
+                                    title: '${(totalIncomeExpense > 0 ? (monthlyIncome / totalIncomeExpense) * 100 : 0.0).toStringAsFixed(0)}%',
+                                    radius: 35,
+                                    titleStyle: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  PieChartSectionData(
+                                    color: const Color(0xFFC62828),
+                                    value: monthlyExpense,
+                                    title: '${(totalIncomeExpense > 0 ? (monthlyExpense / totalIncomeExpense) * 100 : 0.0).toStringAsFixed(0)}%',
+                                    radius: 35,
+                                    titleStyle: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                        BarChartGroupData(
-                          x: 1,
-                          barRods: [
-                            BarChartRodData(
-                              toY: monthlyExpense,
-                              color: Colors.red[700],
-                              width: 25,
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(6),
-                                topRight: Radius.circular(6),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                      gridData: const FlGridData(show: false),
-                      borderData: FlBorderData(show: false),
-                      titlesData: FlTitlesData(
-                        leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            getTitlesWidget: (value, meta) {
-                              if (value.toInt() == 0) {
-                                return const Padding(
-                                  padding: EdgeInsets.only(top: 8.0),
-                                  child: Text('Income', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                                );
-                              } else if (value.toInt() == 1) {
-                                return const Padding(
-                                  padding: EdgeInsets.only(top: 8.0),
-                                  child: Text('Expenses', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                                );
-                              }
-                              return const Text('');
-                            },
                           ),
                         ),
-                      ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          flex: 6,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _buildLegendItem(
+                                color: const Color(0xFF2E7D32),
+                                label: 'Income',
+                                amount: currencyFormat.format(monthlyIncome),
+                                percentage: '${(totalIncomeExpense > 0 ? (monthlyIncome / totalIncomeExpense) * 100 : 0.0).toStringAsFixed(1)}%',
+                              ),
+                              const SizedBox(height: 12),
+                              _buildLegendItem(
+                                color: const Color(0xFFC62828),
+                                label: 'Expenses',
+                                amount: currencyFormat.format(monthlyExpense),
+                                percentage: '${(totalIncomeExpense > 0 ? (monthlyExpense / totalIncomeExpense) * 100 : 0.0).toStringAsFixed(1)}%',
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -555,6 +563,62 @@ class DashboardScreen extends ConsumerWidget {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
+    );
+  }
+
+  Widget _buildLegendItem({
+    required Color color,
+    required String label,
+    required String amount,
+    required String percentage,
+  }) {
+    return Row(
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                  Text(
+                    percentage,
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Text(
+                amount,
+                style: const TextStyle(
+                  color: Colors.black54,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
