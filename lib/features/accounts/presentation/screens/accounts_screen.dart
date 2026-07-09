@@ -82,8 +82,6 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    nameController.dispose();
-                    balanceController.dispose();
                     Navigator.of(dialogContext).pop();
                   },
                   child: const Text('Cancel'),
@@ -100,8 +98,6 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
 
                       ref.read(accountProvider.notifier).addAccount(newAccount);
 
-                      nameController.dispose();
-                      balanceController.dispose();
                       Navigator.of(dialogContext).pop();
 
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -120,7 +116,10 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
           },
         );
       },
-    );
+    ).then((_) {
+      nameController.dispose();
+      balanceController.dispose();
+    });
   }
 
   @override

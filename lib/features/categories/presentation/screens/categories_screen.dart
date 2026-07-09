@@ -150,7 +150,6 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    nameController.dispose();
                     Navigator.of(dialogContext).pop();
                   },
                   child: const Text('Cancel'),
@@ -168,7 +167,6 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
 
                       ref.read(categoryProvider.notifier).addCategory(newCategory);
 
-                      nameController.dispose();
                       Navigator.of(dialogContext).pop();
 
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -187,7 +185,9 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
           },
         );
       },
-    );
+    ).then((_) {
+      nameController.dispose();
+    });
   }
 
   @override
