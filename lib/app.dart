@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'core/routing/router.dart';
 
 class MyApp extends ConsumerWidget {
@@ -13,6 +14,7 @@ class MyApp extends ConsumerWidget {
       theme: ThemeData(
         useMaterial3: true,
         scaffoldBackgroundColor: const Color(0xFFF7F9FC),
+        textTheme: GoogleFonts.poppinsTextTheme(ThemeData.light().textTheme),
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF1976D2),
           primary: const Color(0xFF1976D2),
@@ -50,6 +52,7 @@ class MyApp extends ConsumerWidget {
       darkTheme: ThemeData(
         useMaterial3: true,
         scaffoldBackgroundColor: const Color(0xFF121212),
+        textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF1976D2),
           brightness: Brightness.dark,
