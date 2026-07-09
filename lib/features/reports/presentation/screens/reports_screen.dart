@@ -71,29 +71,39 @@ class ReportsScreen extends ConsumerWidget {
       ),
       drawer: const AppDrawer(),
       body: expenses.isEmpty
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.pie_chart_outline_rounded, size: 64, color: Colors.grey[400]),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'No Expense Data Available',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black54),
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          '📊',
+                          style: TextStyle(fontSize: 80),
+                        ),
+                        const SizedBox(height: 24),
+                        const Text(
+                          'No report data available.',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Add transactions to generate reports.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFF64748B),
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Record some expense transactions to see a category-wise breakdown chart here.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.black38),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : SingleChildScrollView(
+                  ),
+                )        : SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

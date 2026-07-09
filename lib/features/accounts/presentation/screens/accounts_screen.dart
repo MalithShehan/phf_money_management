@@ -142,21 +142,32 @@ class _AccountsScreenState extends ConsumerState<AccountsScreen> {
           : accountState.accounts.isEmpty
               ? Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(24.0),
+                    padding: const EdgeInsets.all(32.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.account_balance_rounded, size: 64, color: Colors.grey[400]),
-                        const SizedBox(height: 16),
+                        const Text(
+                          '💳',
+                          style: TextStyle(fontSize: 80),
+                        ),
+                        const SizedBox(height: 24),
                         const Text(
                           'No Accounts Found',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black54),
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E293B),
+                          ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 12),
                         const Text(
-                          'Create an account to begin tracking your money, or generate sample data in settings.',
+                          'Create your first wallet or bank account.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.black38),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFF64748B),
+                            height: 1.5,
+                          ),
                         ),
                       ],
                     ),

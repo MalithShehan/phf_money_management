@@ -212,21 +212,32 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
           : categoryState.categories.isEmpty
               ? Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(24.0),
+                    padding: const EdgeInsets.all(32.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.category_rounded, size: 64, color: Colors.grey[400]),
-                        const SizedBox(height: 16),
                         const Text(
-                          'No Categories Found',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black54),
+                          '🏷️',
+                          style: TextStyle(fontSize: 80),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 24),
                         const Text(
-                          'Categories are used to classify transactions. Create your custom category or generate sample ones.',
+                          'No Categories',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Create your first category.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.black38),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFF64748B),
+                            height: 1.5,
+                          ),
                         ),
                       ],
                     ),

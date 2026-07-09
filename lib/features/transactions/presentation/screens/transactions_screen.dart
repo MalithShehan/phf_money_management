@@ -83,21 +83,52 @@ class TransactionsScreen extends ConsumerWidget {
           : transactionState.transactions.isEmpty
               ? Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(24.0),
+                    padding: const EdgeInsets.all(32.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.compare_arrows_rounded, size: 64, color: Colors.grey[400]),
-                        const SizedBox(height: 16),
                         const Text(
-                          'No Transactions Found',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black54),
+                          '📄',
+                          style: TextStyle(fontSize: 80),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 24),
                         const Text(
-                          'Transactions record your actual income and spendings. Click the "+" button below to record one.',
+                          'No Transactions Yet',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Start tracking your income and expenses.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.black38),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFF64748B),
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        ElevatedButton.icon(
+                          onPressed: () => context.go('/add-transaction'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1976D2),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          icon: const Text(
+                            '➕',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          label: const Text(
+                            'Add Transaction',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ],
                     ),
